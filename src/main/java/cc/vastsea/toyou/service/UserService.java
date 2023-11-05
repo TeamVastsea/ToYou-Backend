@@ -15,6 +15,8 @@ public interface UserService extends IService<User> {
 
 	void createUser(UserCreateRequest userCreateRequest, HttpServletRequest request);
 
+	void deleteUser(Long uid, HttpServletRequest request);
+
 	EmailCodeGetResponse getEmailCode(String email, HttpServletRequest request);
 
 	User getUserByUid(Long uid, HttpServletRequest request);

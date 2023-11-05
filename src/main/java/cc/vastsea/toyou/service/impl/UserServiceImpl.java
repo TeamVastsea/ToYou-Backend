@@ -166,6 +166,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	}
 
 	@Override
+	public void deleteUser(Long uid, HttpServletRequest request) {
+		User user = getUserByUid(uid, request);
+		if (user == null) {
+			throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+		}
+		this.removeById(uid);
+	}
+
+	@Override
 	public EmailCodeGetResponse getEmailCode(String email, HttpServletRequest request) {
 		String rawEmail = getRawEmail(email);
 

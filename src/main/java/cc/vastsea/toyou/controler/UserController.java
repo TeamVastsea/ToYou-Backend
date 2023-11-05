@@ -1,5 +1,6 @@
 package cc.vastsea.toyou.controler;
 
+import cc.vastsea.toyou.annotation.AuthCheck;
 import cc.vastsea.toyou.common.BaseResponse;
 import cc.vastsea.toyou.common.ResultUtils;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
@@ -8,8 +9,6 @@ import cc.vastsea.toyou.model.dto.UserLoginRequest;
 import cc.vastsea.toyou.model.dto.UserLoginResponse;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.model.vo.UserVO;
-import cc.vastsea.toyou.service.MailService;
-import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,10 +31,6 @@ import static cc.vastsea.toyou.constant.UserConstant.*;
 public class UserController {
 	@Resource
 	private UserService userService;
-	@Resource
-	private MailService mailService;
-	@Resource
-	private PermissionService permissionService;
 
 	@GetMapping("/email/{email}")
 	public BaseResponse<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
@@ -46,6 +41,7 @@ public class UserController {
 	}
 
 	@GetMapping("/{uid}")
+	@AuthCheck(any = "user.get")
 	public BaseResponse<UserVO> getUser(@PathVariable("uid") Long uid, HttpServletRequest request) {
 		User user = userService.getUserByUid(uid, request);
 		UserVO userVO = new UserVO();
