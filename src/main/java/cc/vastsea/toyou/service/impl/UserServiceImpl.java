@@ -5,6 +5,7 @@ import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.UserMapper;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
+import cc.vastsea.toyou.model.dto.UserLoginRequest;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.service.UserService;
 import cc.vastsea.toyou.util.CaffeineFactory;
@@ -13,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -28,8 +30,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	@Resource
 	private UserMapper userMapper;
 
+	public User userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
+		String account = userLoginRequest.getAccount();
+		// 判断是邮箱还是用户名
+		boolean isEmail = account.contains("@");
+		String password = userLoginRequest.getPassword();
+		User user;
+		if (isEmail) {
+
+		}else{
+
+		}
+		return null;
+	}
+
 	@Override
-	public void createUser(UserCreateRequest userCreateRequest) {
+	public void createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
 		String rawEmail = getRawEmail(userCreateRequest.getEmail());
 		String code = emailAuthCode.getIfPresent(rawEmail);
 		if (code == null) {
@@ -59,7 +75,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	}
 
 	@Override
-	public EmailCodeGetResponse getEmailCode(String email) {
+	public EmailCodeGetResponse getEmailCode(String email, HttpServletRequest request) {
 		String rawEmail = getRawEmail(email);
 
 		EmailCodeGetResponse emailCodeGetResponse = new EmailCodeGetResponse();
@@ -82,7 +98,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	}
 
 	@Override
-	public User getUserByUid(Long uid) {
+	public User getUserByUid(Long uid, HttpServletRequest request) {
 		if (uid <= 0) {
 			throw new BusinessException(ErrorCode.PARAMS_ERROR);
 		}

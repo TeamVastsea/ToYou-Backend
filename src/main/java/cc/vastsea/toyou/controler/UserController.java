@@ -10,6 +10,7 @@ import cc.vastsea.toyou.service.MailService;
 import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.service.UserService;
 import jakarta.annotation.Resource;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -30,23 +31,23 @@ public class UserController {
 	private PermissionService permissionService;
 
 	@GetMapping("/email/{email}")
-	public BaseResponse<EmailCodeGetResponse> getEmailCode(@PathVariable("email") String email) {
-		EmailCodeGetResponse ecr = userService.getEmailCode(email);
+	public BaseResponse<EmailCodeGetResponse> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
+		EmailCodeGetResponse ecr = userService.getEmailCode(email, request);
 		return ResultUtils.success(ecr);
 		// todo return ResultUtils.success("success");
 	}
 
 	@GetMapping("/{uid}")
-	public BaseResponse<UserVO> getUser(@PathVariable("uid") Long uid) {
-		User user = userService.getUserByUid(uid);
+	public BaseResponse<UserVO> getUser(@PathVariable("uid") Long uid, HttpServletRequest request) {
+		User user = userService.getUserByUid(uid, request);
 		UserVO userVO = new UserVO();
 		BeanUtils.copyProperties(user, userVO);
 		return ResultUtils.success(userVO);
 	}
 
 	@PostMapping("")
-	public BaseResponse<String> createUser(UserCreateRequest userCreateRequest) {
-		userService.createUser(userCreateRequest);
+	public BaseResponse<String> createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
+		userService.createUser(userCreateRequest, request);
 		return ResultUtils.success("success");
 	}
 }
