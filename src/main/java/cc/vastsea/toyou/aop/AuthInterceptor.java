@@ -1,8 +1,12 @@
 package cc.vastsea.toyou.aop;
 
 import cc.vastsea.toyou.annotation.AuthCheck;
+import cc.vastsea.toyou.common.ErrorCode;
+import cc.vastsea.toyou.exception.BusinessException;
+import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.service.UserService;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
@@ -39,16 +43,25 @@ public class AuthInterceptor {
 		RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
 		HttpServletRequest request = ((ServletRequestAttributes) requestAttributes).getRequest();
 
+		// 当前登录用户
+		User user = userService.getLoginUser(request);
+		long uid = user.getUid();
+
+		// 拥有任意权限即通过
+		if (CollectionUtils.isNotEmpty(any)) {
+			if (any.stream().noneMatch(per -> permissionService.checkPermission(uid, per))) {
+				throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+			}
+		}
+
+		// 必须有所有权限才通过
+		if (CollectionUtils.isNotEmpty(must)) {
+			if (!must.stream().allMatch(per -> permissionService.checkPermission(uid, per))) {
+				throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+			}
+		}
+
 		// 通过权限校验，放行
 		return joinPoint.proceed();
 	}
-
-	public boolean checkAny(Long uid, List<String> any) {
-		return any.stream().anyMatch(per -> permissionService.checkPermission(uid, per)) || any.isEmpty();
-	}
-
-	public boolean checkMust(Long uid, List<String> must) {
-		return must.stream().allMatch(per -> permissionService.checkPermission(uid, per)) || must.isEmpty();
-	}
-
 }

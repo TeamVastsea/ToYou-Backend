@@ -6,6 +6,7 @@ import cc.vastsea.toyou.mapper.UserMapper;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
 import cc.vastsea.toyou.model.dto.UserLoginRequest;
+import cc.vastsea.toyou.model.dto.UserLoginResponse;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.service.UserService;
 import cc.vastsea.toyou.util.CaffeineFactory;
@@ -19,29 +20,119 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Random;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import static cc.vastsea.toyou.constant.UserConstant.*;
 
 @Service
 @Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
+	public static final Cache<UUID, User> userLoginToken = CaffeineFactory.newBuilder()
+			.expireAfterWrite(30, TimeUnit.DAYS)
+			.build();
 	private static final Cache<String, String> emailAuthCode = CaffeineFactory.newBuilder()
 			.expireAfterWrite(10, TimeUnit.MINUTES)
 			.build();
 	@Resource
 	private UserMapper userMapper;
 
-	public User userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
-		String account = userLoginRequest.getAccount();
-		// 判断是邮箱还是用户名
-		boolean isEmail = account.contains("@");
-		String password = userLoginRequest.getPassword();
-		User user;
-		if (isEmail) {
-
-		}else{
-
+	@Override
+	public UserLoginResponse userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
+		UserLoginResponse userLoginResponse = new UserLoginResponse();
+		// 校验是否为token登录
+		if (userLoginRequest.getToken() != null) {
+			// token 登录
+			UUID token = UUID.fromString(userLoginRequest.getToken());
+			User currentUser = userLoginToken.getIfPresent(token);
+			if (currentUser == null || currentUser.getUid() == null) {
+				throw new BusinessException(ErrorCode.PARAMS_ERROR, "token无效");
+			}
+			// 从数据库查询
+			long uid = currentUser.getUid();
+			String oldPass = currentUser.getPassword();
+			currentUser = this.getById(uid);
+			if (currentUser == null || !currentUser.getPassword().equals(oldPass)) {
+				throw new BusinessException(ErrorCode.PARAMS_ERROR, "token无效");
+			}
+			// 登录成功
+			request.getSession().setAttribute(USER_LOGIN_STATE, currentUser);
+			userLoginResponse.setToken(token);
+			userLoginResponse.setUser(currentUser);
+		} else {
+			// 账号密码登录
+			String account = userLoginRequest.getAccount();
+			// 判断是邮箱还是用户名
+			boolean isEmail = account.contains("@");
+			String password = userLoginRequest.getPassword();
+			if (isEmail) {
+				// 检查邮箱格式
+				if (!account.matches("^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$")) {
+					throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
+				}
+				// 检查邮箱是否存在
+				QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+				queryWrapper.eq("email", account);
+				User user = userMapper.selectOne(queryWrapper);
+				if (user == null) {
+					throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不存在");
+				}
+				// 检查密码
+				if (!PasswordUtil.checkPassword(password, user.getPassword())) {
+					throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+				}
+				// 登录成功
+				request.getSession().setAttribute(USER_LOGIN_STATE, user);
+				userLoginResponse.setUser(user);
+			} else {
+				// 检查用户名格式
+				if (!account.matches("^[a-zA-Z0-9_-]{4,16}$")) {
+					throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名格式错误");
+				}
+				// 检查用户名是否存在
+				QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+				queryWrapper.eq("username", account);
+				User user = userMapper.selectOne(queryWrapper);
+				if (user == null) {
+					throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名不存在");
+				}
+				// 检查密码
+				if (!PasswordUtil.checkPassword(password, user.getPassword())) {
+					throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+				}
+				// 登录成功
+				request.getSession().setAttribute(USER_LOGIN_STATE, user);
+				userLoginResponse.setUser(user);
+			}
+			User user = userLoginResponse.getUser();
+			// 生成token
+			UUID token = UUID.randomUUID();
+			userLoginToken.put(token, user);
+			userLoginResponse.setToken(token);
 		}
-		return null;
+		return userLoginResponse;
+	}
+
+
+	/**
+	 * 获取当前登录用户
+	 */
+	@Override
+	public User getLoginUser(HttpServletRequest request) {
+		// 先判断是否已登录
+		Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+		User currentUser = (User) userObj;
+		if (currentUser == null || currentUser.getUid() == null) {
+			throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+		}
+		// 从数据库查询（追求性能的话可以注释，直接走缓存）
+		long uid = currentUser.getUid();
+		String oldPass = currentUser.getPassword();
+		currentUser = this.getById(uid);
+		if (currentUser == null || !currentUser.getPassword().equals(oldPass)) {
+			throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+		}
+		return currentUser;
 	}
 
 	@Override
