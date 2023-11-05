@@ -4,10 +4,14 @@ import cc.vastsea.toyou.common.BaseResponse;
 import cc.vastsea.toyou.common.ResultUtils;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
+import cc.vastsea.toyou.model.entity.User;
+import cc.vastsea.toyou.model.vo.UserVO;
 import cc.vastsea.toyou.service.MailService;
+import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,19 +26,27 @@ public class UserController {
 	private UserService userService;
 	@Resource
 	private MailService mailService;
+	@Resource
+	private PermissionService permissionService;
 
-	@GetMapping("/{email}")
+	@GetMapping("/email/{email}")
 	public BaseResponse<EmailCodeGetResponse> getEmailCode(@PathVariable("email") String email) {
 		EmailCodeGetResponse ecr = userService.getEmailCode(email);
 		return ResultUtils.success(ecr);
 		// todo return ResultUtils.success("success");
 	}
 
-	@PostMapping("/")
+	@GetMapping("/{uid}")
+	public BaseResponse<UserVO> getUser(@PathVariable("uid") Long uid) {
+		User user = userService.getUserByUid(uid);
+		UserVO userVO = new UserVO();
+		BeanUtils.copyProperties(user, userVO);
+		return ResultUtils.success(userVO);
+	}
+
+	@PostMapping("")
 	public BaseResponse<String> createUser(UserCreateRequest userCreateRequest) {
 		userService.createUser(userCreateRequest);
 		return ResultUtils.success("success");
 	}
-
-
 }

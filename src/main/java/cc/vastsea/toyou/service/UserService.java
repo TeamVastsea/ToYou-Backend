@@ -9,4 +9,6 @@ public interface UserService extends IService<User> {
 	void createUser(UserCreateRequest userCreateRequest);
 
 	EmailCodeGetResponse getEmailCode(String email);
+
+	User getUserByUid(Long uid);
 }

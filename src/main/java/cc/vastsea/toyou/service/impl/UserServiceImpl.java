@@ -81,6 +81,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		return emailCodeGetResponse;
 	}
 
+	@Override
+	public User getUserByUid(Long uid) {
+		if (uid <= 0) {
+			throw new BusinessException(ErrorCode.PARAMS_ERROR);
+		}
+		return this.getById(uid);
+	}
+
 
 	public boolean checkDuplicates(String emailRaw) {
 		try {
