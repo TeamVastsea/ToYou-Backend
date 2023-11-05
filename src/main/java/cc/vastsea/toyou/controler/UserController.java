@@ -38,10 +38,11 @@ public class UserController {
 	private PermissionService permissionService;
 
 	@GetMapping("/email/{email}")
-	public BaseResponse<EmailCodeGetResponse> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
+	public BaseResponse<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
 		EmailCodeGetResponse ecr = userService.getEmailCode(email, request);
-		return ResultUtils.success(ecr);
-		// todo return ResultUtils.success("success");
+		// return ResultUtils.success(ecr);
+		log.debug("code:" + ecr.getCode());
+		return ResultUtils.success("success");
 	}
 
 	@GetMapping("/{uid}")
