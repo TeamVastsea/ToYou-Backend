@@ -64,4 +64,12 @@ public class UserController {
 		UserLoginResponse ulr = userService.userLogin(userLoginRequest, request);
 		return ResultUtils.success(ulr.getToken());
 	}
+
+	@GetMapping("/getlogin")
+	public BaseResponse<UserVO> getLoginUser(HttpServletRequest request) {
+		User user = userService.getLoginUser(request);
+		UserVO userVO = new UserVO();
+		BeanUtils.copyProperties(user, userVO);
+		return ResultUtils.success(userVO);
+	}
 }
