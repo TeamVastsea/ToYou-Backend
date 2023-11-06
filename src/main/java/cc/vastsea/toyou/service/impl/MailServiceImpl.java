@@ -1,6 +1,5 @@
 package cc.vastsea.toyou.service.impl;
 
-import cc.vastsea.toyou.common.ErrorCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.service.MailService;
 import cc.vastsea.toyou.service.UserService;
@@ -58,7 +57,7 @@ public class MailServiceImpl implements MailService {
 	public void checkEmail(String to){
 		Boolean sent = emailSent.getIfPresent(to);
 		if (sent != null){
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱发送过于频繁");
+			throw new BusinessException(500, "邮箱发送过于频繁");
 		}
 	}
 }

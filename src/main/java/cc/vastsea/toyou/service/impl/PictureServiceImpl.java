@@ -11,7 +11,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 	@Override
 	public boolean addPicture(String data) {
 		if (data.isEmpty()) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "body为空");
+			throw new BusinessException(ErrorCode.BAD_REQUEST, "body为空");
 		}
 
 		Picture picture = new Picture();

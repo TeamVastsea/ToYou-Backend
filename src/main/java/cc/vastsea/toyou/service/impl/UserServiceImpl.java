@@ -1,6 +1,5 @@
 package cc.vastsea.toyou.service.impl;
 
-import cc.vastsea.toyou.common.ErrorCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.UserMapper;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
@@ -23,7 +22,7 @@ import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static cc.vastsea.toyou.constant.UserConstant.*;
+import static cc.vastsea.toyou.constant.UserConstant.USER_LOGIN_STATE;
 
 @Service
 @Slf4j
@@ -87,7 +86,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			} else {
 				// 检查用户名格式
 				if (!account.matches("^[a-zA-Z0-9_-]{4,16}$")) {
-					throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名格式错误");
+					throw new BusinessException(400, "用户名格式错误");
 				}
 				// 检查用户名是否存在
 				QueryWrapper<User> queryWrapper = new QueryWrapper<>();
