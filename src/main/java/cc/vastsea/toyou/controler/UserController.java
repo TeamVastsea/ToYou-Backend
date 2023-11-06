@@ -2,6 +2,7 @@ package cc.vastsea.toyou.controler;
 
 import cc.vastsea.toyou.annotation.AuthCheck;
 import cc.vastsea.toyou.common.BaseResponse;
+import cc.vastsea.toyou.common.ErrorCode;
 import cc.vastsea.toyou.common.ResultUtils;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
@@ -9,11 +10,16 @@ import cc.vastsea.toyou.model.dto.UserLoginRequest;
 import cc.vastsea.toyou.model.dto.UserLoginResponse;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.model.vo.UserVO;
+import cc.vastsea.toyou.service.MailService;
 import cc.vastsea.toyou.service.UserService;
+import cc.vastsea.toyou.service.impl.MailServiceImpl;
+import cc.vastsea.toyou.util.CaffeineFactory;
+import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -31,13 +37,17 @@ import static cc.vastsea.toyou.constant.UserConstant.*;
 public class UserController {
 	@Resource
 	private UserService userService;
+	@Resource
+	private MailService mailService ;
 
 	@GetMapping("/email/{email}")
-	public BaseResponse<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
+	public ResponseEntity<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
 		EmailCodeGetResponse ecr = userService.getEmailCode(email, request);
-		// return ResultUtils.success(ecr);
-		log.debug("code:" + ecr.getCode());
-		return ResultUtils.success("success");
+		if (ecr.isExist()) {
+            return new ResponseEntity<>("exists", null, 200);
+		}
+		mailService.verifyEmail(email, ecr.getCode());
+		return new ResponseEntity<>("created", null, 200);
 	}
 
 	@GetMapping("/{uid}")
@@ -50,9 +60,9 @@ public class UserController {
 	}
 
 	@PostMapping("")
-	public BaseResponse<String> createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
+	public ResponseEntity<String> createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
 		userService.createUser(userCreateRequest, request);
-		return ResultUtils.success("success");
+		return new ResponseEntity<>(null, null, 201);
 	}
 
 	@GetMapping("")

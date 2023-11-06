@@ -21,17 +21,21 @@ public class MailServiceImpl implements MailService {
 	@Value("${spring.mail.username:username@gmail.com}")
 	private String from;
 
-	@Override
 	@Async
-	public void mailTest(String to, String text) {
+	@Override
+	public void verifyEmail(String to, String code) {
+		checkEmail(to);
 		MimeMessage message = javaMailSender.createMimeMessage();
 		try {
 			MimeMessageHelper helper = new MimeMessageHelper(message, true);
 			helper.setFrom(from);
 			helper.setTo(to);
-			helper.setSubject("测试邮件");
-			String text1 = "这是一封测试邮件" + text;
-			helper.setText(text1, true);
+			helper.setSubject("图邮-邮箱验证码");
+			helper.setCc(from);
+			Context context = new Context();
+			context.setVariable("code", code);
+			String text = templateEngine.process("EmailCode", context);
+			helper.setText(text, true);
 			javaMailSender.send(message);
 		} catch (Exception e) {
 			e.printStackTrace();

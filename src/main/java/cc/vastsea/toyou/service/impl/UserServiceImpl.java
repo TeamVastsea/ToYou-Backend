@@ -46,14 +46,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			UUID token = UUID.fromString(userLoginRequest.getToken());
 			User currentUser = userLoginToken.getIfPresent(token);
 			if (currentUser == null || currentUser.getUid() == null) {
-				throw new BusinessException(ErrorCode.PARAMS_ERROR, "token无效");
+				throw new BusinessException(401, "token无效");
 			}
 			// 从数据库查询
 			long uid = currentUser.getUid();
 			String oldPass = currentUser.getPassword();
 			currentUser = this.getById(uid);
 			if (currentUser == null || !currentUser.getPassword().equals(oldPass)) {
-				throw new BusinessException(ErrorCode.PARAMS_ERROR, "token无效");
+				throw new BusinessException(401, "token无效");
 			}
 			// 登录成功
 			request.getSession().setAttribute(USER_LOGIN_STATE, currentUser);
@@ -68,18 +68,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			if (isEmail) {
 				// 检查邮箱格式
 				if (!account.matches("^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$")) {
-					throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
+					throw new BusinessException(400, "邮箱格式错误");
 				}
 				// 检查邮箱是否存在
 				QueryWrapper<User> queryWrapper = new QueryWrapper<>();
 				queryWrapper.eq("email", account);
 				User user = userMapper.selectOne(queryWrapper);
 				if (user == null) {
-					throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱不存在");
+					throw new BusinessException(401, "邮箱不存在");
 				}
 				// 检查密码
 				if (!PasswordUtil.checkPassword(password, user.getPassword())) {
-					throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+					throw new BusinessException(401, "密码错误");
 				}
 				// 登录成功
 				request.getSession().setAttribute(USER_LOGIN_STATE, user);
@@ -94,11 +94,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 				queryWrapper.eq("username", account);
 				User user = userMapper.selectOne(queryWrapper);
 				if (user == null) {
-					throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名不存在");
+					throw new BusinessException(404, "用户名不存在");
 				}
 				// 检查密码
 				if (!PasswordUtil.checkPassword(password, user.getPassword())) {
-					throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码错误");
+					throw new BusinessException(401, "密码错误");
 				}
 				// 登录成功
 				request.getSession().setAttribute(USER_LOGIN_STATE, user);
@@ -123,14 +123,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
 		User currentUser = (User) userObj;
 		if (currentUser == null || currentUser.getUid() == null) {
-			throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+			throw new BusinessException(401, "未登录");
 		}
 		// 从数据库查询（追求性能的话可以注释，直接走缓存）
 		long uid = currentUser.getUid();
 		String oldPass = currentUser.getPassword();
 		currentUser = this.getById(uid);
 		if (currentUser == null || !currentUser.getPassword().equals(oldPass)) {
-			throw new BusinessException(ErrorCode.NOT_LOGIN_ERROR);
+			throw new BusinessException(401, "未登录");
 		}
 		return currentUser;
 	}
@@ -140,21 +140,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		String rawEmail = getRawEmail(userCreateRequest.getEmail());
 		String code = emailAuthCode.getIfPresent(rawEmail);
 		if (code == null) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "请先获取验证码");
+			throw new BusinessException(400, "请提交验证码");
 		}
 		if (!code.equals(userCreateRequest.getCode())) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "验证码错误");
+			throw new BusinessException(401, "验证码错误");
 		}
 		if (checkDuplicates(rawEmail)) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱已被注册");
+			throw new BusinessException(401, "邮箱已被注册");
 		}
 		// 检查用户名，特殊符号只能使用-和_，其它不能使用。并且检查字符串个数，大于4小于16
 		if (!userCreateRequest.getUsername().matches("^[a-zA-Z0-9_-]{4,16}$")) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名格式错误");
+			throw new BusinessException(400, "用户名格式错误");
 		}
 		// 检查密码不过分简单。大小写字母、数字、特殊符号中至少包含两个，且长度大于6小于16。
 		if (!userCreateRequest.getPassword().matches("^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\\W_]+$)(?![a-z0-9]+$)(?![a-z\\W_]+$)(?![0-9\\W_]+$)[a-zA-Z0-9\\W_]{6,16}$")) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码格式错误");
+			throw new BusinessException(400, "密码格式错误");
 		}
 		User user = new User();
 		user.setUsername(userCreateRequest.getUsername());
@@ -169,7 +169,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	public void deleteUser(Long uid, HttpServletRequest request) {
 		User user = getUserByUid(uid, request);
 		if (user == null) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户不存在");
+			throw new BusinessException(401, "用户不存在");
 		}
 		this.removeById(uid);
 	}
@@ -190,9 +190,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			}
 			String uppercaseCode = code.toString().toUpperCase();
 
-			emailAuthCode.put(rawEmail, uppercaseCode);
+			emailAuthCode.put(email, uppercaseCode);
 			emailCodeGetResponse.setExist(false);
 			emailCodeGetResponse.setCode(uppercaseCode);
+
 		}
 		return emailCodeGetResponse;
 	}
@@ -200,18 +201,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	@Override
 	public User getUserByUid(Long uid, HttpServletRequest request) {
 		if (uid <= 0) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR);
+			throw new BusinessException(400, "uid 小于0");
 		}
 		return this.getById(uid);
 	}
 
 
+	//
 	public boolean checkDuplicates(String emailRaw) {
 		try {
 			QueryWrapper<User> queryWrapper = new QueryWrapper<>();
 			queryWrapper.eq("emailRaw", emailRaw);
 			long count = userMapper.selectCount(queryWrapper);
-			log.error(count + "数量");
 			return count > 0;
 		} catch (Throwable e) {
 			log.error(e.toString());
@@ -222,7 +223,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	public String getRawEmail(String email) {
 		String[] emailSplit = email.split("@");
 		if (emailSplit.length != 2) {
-			throw new BusinessException(ErrorCode.PARAMS_ERROR, "邮箱格式错误");
+			throw new BusinessException(400, "邮箱格式错误");
 		}
 		String emailRawName = emailSplit[0].split("\\+")[0];
 		return emailRawName + "@" + emailSplit[1];

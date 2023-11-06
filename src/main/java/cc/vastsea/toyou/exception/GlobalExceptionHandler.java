@@ -4,6 +4,7 @@ import cc.vastsea.toyou.common.BaseResponse;
 import cc.vastsea.toyou.common.ErrorCode;
 import cc.vastsea.toyou.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -15,14 +16,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(BusinessException.class)
-	public BaseResponse<?> businessExceptionHandler(BusinessException e) {
+	public ResponseEntity<String> businessExceptionHandler(BusinessException e) {
 		log.error("businessException: " + e.getMessage(), e);
-		return ResultUtils.error(e.getCode(), e.getMessage());
+		return new ResponseEntity<>(e.getMessage(), null, e.getCode());
 	}
 
 	@ExceptionHandler(RuntimeException.class)
-	public BaseResponse<?> runtimeExceptionHandler(RuntimeException e) {
+	public ResponseEntity<String> runtimeExceptionHandler(RuntimeException e) {
 		log.error("runtimeException", e);
-		return ResultUtils.error(ErrorCode.SYSTEM_ERROR, e.getMessage());
+		return new ResponseEntity<>(e.getMessage(), null, 500);
 	}
 }

@@ -4,5 +4,5 @@ import org.springframework.scheduling.annotation.Async;
 
 public interface MailService {
 	@Async
-	void mailTest(String to, String text);
+	void verifyEmail(String to, String code);
 }
