@@ -1,8 +1,5 @@
 package cc.vastsea.toyou.exception;
 
-import cc.vastsea.toyou.common.BaseResponse;
-import cc.vastsea.toyou.common.ErrorCode;
-import cc.vastsea.toyou.common.ResultUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

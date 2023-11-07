@@ -1,6 +1,7 @@
 package cc.vastsea.toyou.aop;
 
 import cc.vastsea.toyou.annotation.AuthCheck;
+import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.service.PermissionService;
@@ -49,14 +50,14 @@ public class AuthInterceptor {
 		// 拥有任意权限即通过
 		if (CollectionUtils.isNotEmpty(any)) {
 			if (any.stream().noneMatch(per -> permissionService.checkPermission(uid, per))) {
-				throw new BusinessException(403, "无权限");
+				throw new BusinessException(StatusCode.FORBIDDEN, "无权限");
 			}
 		}
 
 		// 必须有所有权限才通过
 		if (CollectionUtils.isNotEmpty(must)) {
 			if (!must.stream().allMatch(per -> permissionService.checkPermission(uid, per))) {
-				throw new BusinessException(403, "无权限");
+				throw new BusinessException(StatusCode.FORBIDDEN, "无权限");
 			}
 		}
 

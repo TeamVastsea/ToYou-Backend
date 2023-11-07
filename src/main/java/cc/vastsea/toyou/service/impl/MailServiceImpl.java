@@ -1,8 +1,8 @@
 package cc.vastsea.toyou.service.impl;
 
+import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.service.MailService;
-import cc.vastsea.toyou.service.UserService;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class MailServiceImpl implements MailService {
-	@Resource
-	private UserService userService;
 	@Resource
 	private JavaMailSender javaMailSender;
 	@Resource
@@ -50,14 +48,14 @@ public class MailServiceImpl implements MailService {
 			helper.setText(text, true);
 			javaMailSender.send(message);
 		} catch (Exception e) {
-			e.printStackTrace();
+			log.error(e.toString());
 		}
 	}
 
 	public void checkEmail(String to){
 		Boolean sent = emailSent.getIfPresent(to);
 		if (sent != null){
-			throw new BusinessException(500, "邮箱发送过于频繁");
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "邮箱发送过于频繁");
 		}
 	}
 }

@@ -1,6 +1,6 @@
 package cc.vastsea.toyou.service.impl;
 
-import cc.vastsea.toyou.common.ErrorCode;
+import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
@@ -11,7 +11,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 	@Override
 	public boolean addPicture(String data) {
 		if (data.isEmpty()) {
-			throw new BusinessException(ErrorCode.BAD_REQUEST, "body为空");
+			throw new BusinessException(StatusCode.BAD_REQUEST, "body为空");
 		}
 
 		Picture picture = new Picture();
