@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `permission`
 (
     id         BIGINT AUTO_INCREMENT              NOT NULL COMMENT 'id' PRIMARY KEY,
     uid        BIGINT                             NOT NULL COMMENT 'uid',
-    permission VARCHAR(32)                        NOT NULL COMMENT '权bb限',
+    permission VARCHAR(32)                        NOT NULL COMMENT '权限',
     expiry     BIGINT   DEFAULT 0                 NOT NULL COMMENT '过期时间',
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
     updateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
