@@ -15,63 +15,58 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import java.util.UUID;
-
-import static cc.vastsea.toyou.constant.UserConstant.*;
 
 @RestController
 @RequestMapping("/user")
 @Slf4j
 public class UserController {
-	@Resource
-	private UserService userService;
-	@Resource
-	private MailService mailService ;
+    @Resource
+    private UserService userService;
+    @Resource
+    private MailService mailService;
 
-	@GetMapping("/email/{email}")
-	public ResponseEntity<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
-		EmailCodeGetResponse ecr = userService.getEmailCode(email, request);
-		if (ecr.isExist()) {
+    @GetMapping("/email/{email}")
+    public ResponseEntity<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
+        EmailCodeGetResponse ecr = userService.getEmailCode(email, request);
+        if (ecr.isExist()) {
             return new ResponseEntity<>("exists", null, StatusCode.OK);
-		}
-		mailService.verifyEmail(email, ecr.getCode());
-		return new ResponseEntity<>("created", null, StatusCode.CREATED);
-	}
+        }
+        mailService.verifyEmail(email, ecr.getCode());
+        return new ResponseEntity<>("created", null, StatusCode.CREATED);
+    }
 
-	@GetMapping("/{uid}")
-	@AuthCheck(any = "user.get")
-	public ResponseEntity<UserVO> getUser(@PathVariable("uid") Long uid, HttpServletRequest request) {
-		User user = userService.getUserByUid(uid, request);
-		UserVO userVO = new UserVO();
-		BeanUtils.copyProperties(user, userVO);
-		return new ResponseEntity<>(userVO, null, StatusCode.OK);
-	}
+    @GetMapping("/{uid}")
+    @AuthCheck(any = "user.get")
+    public ResponseEntity<UserVO> getUser(@PathVariable("uid") Long uid, HttpServletRequest request) {
+        User user = userService.getUserByUid(uid, request);
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return new ResponseEntity<>(userVO, null, StatusCode.OK);
+    }
 
-	@PostMapping("")
-	public ResponseEntity<String> createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
-		userService.createUser(userCreateRequest, request);
-		return new ResponseEntity<>(null, null, StatusCode.CREATED);
-	}
+    @PostMapping("")
+    public ResponseEntity<String> createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
+        userService.createUser(userCreateRequest, request);
+        return new ResponseEntity<>(null, null, StatusCode.CREATED);
+    }
 
-	@GetMapping("")
-	public ResponseEntity<UUID> userLogin(UserLoginRequest userLoginRequest, @RequestHeader(name = USER_TOKEN_HEADER, required = false) String token, HttpServletRequest request) {
-		userLoginRequest.setToken(token);
-		UserLoginResponse ulr = userService.userLogin(userLoginRequest, request);
-		return new ResponseEntity<>(ulr.getToken(), null, StatusCode.OK);
-	}
+    @GetMapping("")
+    public ResponseEntity<UserVO> userLogin(String username, String password, HttpServletRequest request) {
+        UserLoginRequest userLoginRequest = new UserLoginRequest();
+        userLoginRequest.setAccount(username);
+        userLoginRequest.setPassword(password);
+        UserVO userVO = userService.userLogin(userLoginRequest, request);
 
-	@GetMapping("/getlogin")
-	public ResponseEntity<UserVO> getLoginUser(HttpServletRequest request) {
-		User user = userService.getLoginUser(request);
-		UserVO userVO = new UserVO();
-		BeanUtils.copyProperties(user, userVO);
-		return new ResponseEntity<>(userVO, null, StatusCode.OK);
-	}
+        MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+        headers.add("token", userService.getToken(userVO.getUid()));
+
+        return new ResponseEntity<>(userVO, headers, StatusCode.OK);
+    }
 }

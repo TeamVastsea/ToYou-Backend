@@ -1,5 +1,6 @@
 package cc.vastsea.toyou.model.entity;
 
+import cc.vastsea.toyou.model.vo.UserVO;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -37,4 +38,15 @@ public class User implements Serializable {
 
 	@TableLogic
 	private Boolean available;
+
+	public UserVO toUserVO() {
+		UserVO userVO = new UserVO();
+		userVO.setUid(this.getUid());
+		userVO.setEmail(this.getEmail());
+		userVO.setUsername(this.getEmail());
+		userVO.setCreateTime(this.getCreateTime());
+		userVO.setUpdateTime(this.getUpdateTime());
+
+		return userVO;
+	}
 }

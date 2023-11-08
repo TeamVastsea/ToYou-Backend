@@ -15,6 +15,7 @@ public class PasswordUtil {
 	private static final int DEFAULT_ITERATIONS = 10000;
 	private static final String SALT_CHARS = "123456789zxcvbnmasdfghjklqwertyuiopQWERTYUIOPASDFGHJKLZXCVBNM";
 
+	//DO NOT USE THIS FOR COMPUTING PASSWORD HASH!!!!!
 	private static String getEncodeHash(String password, String salt) {
 		SecretKeyFactory keyFactory;
 		try {
