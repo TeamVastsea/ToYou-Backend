@@ -6,5 +6,5 @@ public interface UserConstant {
 	 */
 	String USER_LOGIN_STATE = "userLoginState";
 
-	String USER_TOKEN_HEADER = "user-token";
+	String USER_TOKEN_HEADER = "token";
 }

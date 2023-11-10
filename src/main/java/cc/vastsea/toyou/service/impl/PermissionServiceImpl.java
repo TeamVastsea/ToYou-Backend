@@ -1,5 +1,7 @@
 package cc.vastsea.toyou.service.impl;
 
+import cc.vastsea.toyou.common.StatusCode;
+import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.PermissionMapper;
 import cc.vastsea.toyou.model.entity.Permission;
 import cc.vastsea.toyou.service.PermissionService;
@@ -75,7 +77,10 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 			permissionQuery.setUid(uid);
 			permissionQuery.setPermission(permission);
 			permissionQuery.setExpiry(expiry);
-			this.save(permissionQuery);
+			boolean saveResult = this.save(permissionQuery);
+			if (!saveResult) {
+				throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
+			}
 		} else {
 			permissionQuery.setExpiry(expiry);
 			permissionMapper.updateById(permissionQuery);

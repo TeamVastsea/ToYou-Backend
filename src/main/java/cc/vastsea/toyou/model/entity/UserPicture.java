@@ -11,9 +11,9 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-@TableName(value = "picture")
+@TableName(value = "user_picture")
 @Data
-public class Picture implements Serializable {
+public class UserPicture implements Serializable {
 	@Serial
 	@TableField(exist = false)
 	private static final long serialVersionUID = 1L;
@@ -21,9 +21,12 @@ public class Picture implements Serializable {
 	 * id
 	 */
 	@TableId(type = IdType.AUTO)
-	private String pid;
-	private String path;
-	private Long size;
+	private Long id;
+	private String uuid;
+	private Long uid;
+	private String fileName;
+	private Long downloads;
+	private Boolean isPublic;
 	private Date createTime;
 	private Date updateTime;
 	@TableLogic

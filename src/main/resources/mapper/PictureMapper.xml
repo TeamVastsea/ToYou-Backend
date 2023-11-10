@@ -6,18 +6,14 @@
 
     <resultMap id="BaseResultMap" type="cc.vastsea.toyou.model.entity.Picture">
         <id property="pid" column="pid" jdbcType="VARCHAR"/>
-        <result property="isPublic" column="isPublic" jdbcType="BOOLEAN"/>
-        <result property="downloads" column="downloads" jdbcType="INTEGER"/>
-        <result property="expiry" column="expiry" jdbcType="BIGINT"/>
-        <result property="owner" column="owner" jdbcType="BIGINT"/>
         <result property="path" column="path" jdbcType="VARCHAR"/>
-        <result property="realName" column="realName" jdbcType="VARCHAR"/>
+        <result property="size" column="size" jdbcType="BIGINT"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
         <result property="available" column="available" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        pid, isPublic, downloads, expiry, owner, path, realName, createTime, updateTime, available
+        pid, path, size, createTime, updateTime, available
     </sql>
 </mapper>

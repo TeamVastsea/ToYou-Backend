@@ -21,15 +21,15 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class MailServiceImpl implements MailService {
+	public static final Cache<String, Boolean> emailSent = CaffeineFactory.newBuilder()
+			.expireAfterWrite(1, TimeUnit.MINUTES)
+			.build();
 	@Resource
 	private JavaMailSender javaMailSender;
 	@Resource
 	private TemplateEngine templateEngine;
 	@Value("${spring.mail.username:username@gmail.com}")
 	private String from;
-	public static final Cache<String, Boolean> emailSent = CaffeineFactory.newBuilder()
-			.expireAfterWrite(1, TimeUnit.MINUTES)
-			.build();
 
 	@Async
 	@Override
@@ -52,9 +52,9 @@ public class MailServiceImpl implements MailService {
 		}
 	}
 
-	public void checkEmail(String to){
+	public void checkEmail(String to) {
 		Boolean sent = emailSent.getIfPresent(to);
-		if (sent != null){
+		if (sent != null) {
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "邮箱发送过于频繁");
 		}
 	}

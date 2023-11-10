@@ -27,14 +27,24 @@ CREATE TABLE IF NOT EXISTS `permission`
 
 CREATE TABLE IF NOT EXISTS `picture`
 (
-    pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-uuid' PRIMARY KEY,
-    isPublic   BOOL     DEFAULT FALSE             NOT NULL COMMENT '是否公开',
-    downloads  BIGINT   DEFAULT 0                 NOT NULL COMMENT '下载次数',
-    expiry     BIGINT   DEFAULT 0                 NOT NULL COMMENT '过期时间',
-    owner      BIGINT                             NOT NULL COMMENT '所有者uid',
-    path       VARCHAR(32)                        NOT NULL COMMENT '存储路径-md5',
-    realName   VARCHAR(32)                        NOT NULL COMMENT '真实文件名',
+    pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-md5' PRIMARY KEY,
+    path       VARCHAR(32)                        NOT NULL COMMENT '存储路径',
+    size       BIGINT                             NOT NULL COMMENT '大小(单位：字节)',
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
     updateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     available  BOOL     DEFAULT TRUE              NOT NULL COMMENT '是否可用'
-)
+);
+
+CREATE TABLE IF NOT EXISTS `user_picture`
+(
+    id         BIGINT AUTO_INCREMENT              NOT NULL COMMENT 'id' PRIMARY KEY,
+    uuid       VARCHAR(36)                        NOT NULL COMMENT '下载uuid',
+    uid        BIGINT                             NOT NULL COMMENT 'uid',
+    pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-md5',
+    fileName   VARCHAR(32)                        NOT NULL COMMENT '文件名',
+    downloads  BIGINT   DEFAULT 0                 NOT NULL COMMENT '下载次数',
+    isPublic   BOOL     DEFAULT FALSE             NOT NULL COMMENT '是否公开',
+    createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
+    updateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    available  BOOL     DEFAULT TRUE              NOT NULL COMMENT '是否可用'
+);
