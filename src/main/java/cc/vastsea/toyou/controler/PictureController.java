@@ -27,7 +27,7 @@ public class PictureController {
 	public ResponseEntity<String> uploadPicture(UploadPictureRequest uploadPictureRequest, @RequestBody MultipartFile file, HttpServletRequest request) {
 		Picture picture;
 		try {
-			picture = pictureService.addPicture(file);
+			picture = pictureService.uploadPicture(file);
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

@@ -28,7 +28,9 @@ CREATE TABLE IF NOT EXISTS `permission`
 CREATE TABLE IF NOT EXISTS `picture`
 (
     pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-md5' PRIMARY KEY,
-    path       TEXT                               NOT NULL COMMENT '存储路径',
+    original   TEXT                               NOT NULL COMMENT '原图路径',
+    thumbnail  TEXT                               NOT NULL COMMENT '缩略图路径',
+    watermark  TEXT                               NOT NULL COMMENT '水印图路径',
     size       BIGINT                             NOT NULL COMMENT '大小(单位：字节)',
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
     updateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',

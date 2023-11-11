@@ -7,5 +7,5 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface PictureService extends IService<Picture> {
-	Picture addPicture(MultipartFile file) throws IOException;
+	Picture uploadPicture(MultipartFile file) throws IOException;
 }

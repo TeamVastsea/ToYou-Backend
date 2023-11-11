@@ -22,7 +22,9 @@ public class Picture implements Serializable {
 	 */
 	@TableId(type = IdType.AUTO)
 	private String pid;
-	private String path;
+	private String original;
+	private String thumbnail;
+	private String watermark;
 	private Long size;
 	private Date createTime;
 	private Date updateTime;
