@@ -1,6 +1,10 @@
 spring:
   application:
     name: toyou-backend
+  servlet:
+    multipart:
+      max-request-size: 100MB  # 上传文件总的最大值 默认10MB
+      max-file-size: 50MB
   # 数据库配置
   datasource:
     driver-class-name: org.postgresql.Driver

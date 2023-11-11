@@ -8,27 +8,30 @@ import cc.vastsea.toyou.service.PictureService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Base64;
+import java.util.Objects;
 
+@Service
+@Slf4j
 public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> implements PictureService {
 	@Resource
 	private PictureMapper pictureMapper;
 
 	@Override
-	public Picture addPicture(String data) throws IOException {
-		if (data.isEmpty()) {
-			throw new BusinessException(StatusCode.BAD_REQUEST, "body为空");
+	public Picture addPicture(MultipartFile file) throws IOException {
+		if (file == null || file.isEmpty()) {
+			throw new BusinessException(StatusCode.FORBIDDEN, "图片为空");
 		}
-		byte[] decodedImg = Base64.getDecoder()
-				.decode(data.getBytes(StandardCharsets.UTF_8));
-		String md5 = DigestUtils.md5DigestAsHex(decodedImg);
+		byte[] data = file.getBytes();
+		String md5 = DigestUtils.md5DigestAsHex(data);
 
 		// 检查目标md5图片是否已经存在数据库中
 		QueryWrapper<Picture> queryWrapper = new QueryWrapper<>();
@@ -37,13 +40,16 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 		if (pic != null) {
 			return pic;
 		}
+		// 获取图片类型拓展名
+		String ext = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf("."));
 		// 将md5取前4位，存入文件夹，防止文件过多
 		String dir = md5.substring(0, 4);
-		Path path = Paths.get("pictures", dir, md5);
+		// 生成文件路径
+		Path path = Paths.get("pictures", dir, md5 + ext);
 		Files.createDirectories(path.getParent());
-		Files.write(path, decodedImg);
+		Files.write(path, data);
 		// 获取文件大小，Long
-		long size = Files.size(path);
+		long size = file.getSize();
 
 		Picture picture = new Picture();
 		picture.setPid(md5);

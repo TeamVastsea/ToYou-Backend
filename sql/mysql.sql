@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS `permission`
 CREATE TABLE IF NOT EXISTS `picture`
 (
     pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-md5' PRIMARY KEY,
-    path       VARCHAR(32)                        NOT NULL COMMENT '存储路径',
+    path       TEXT                               NOT NULL COMMENT '存储路径',
     size       BIGINT                             NOT NULL COMMENT '大小(单位：字节)',
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
     updateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS `user_picture`
     uuid       VARCHAR(36)                        NOT NULL COMMENT '下载uuid',
     uid        BIGINT                             NOT NULL COMMENT 'uid',
     pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-md5',
-    fileName   VARCHAR(32)                        NOT NULL COMMENT '文件名',
+    fileName   VARCHAR(128)                       NOT NULL COMMENT '文件名',
     downloads  BIGINT   DEFAULT 0                 NOT NULL COMMENT '下载次数',
     isPublic   BOOL     DEFAULT FALSE             NOT NULL COMMENT '是否公开',
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
