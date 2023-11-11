@@ -4,6 +4,7 @@ import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.PermissionMapper;
 import cc.vastsea.toyou.model.entity.Permission;
+import cc.vastsea.toyou.model.enums.Group;
 import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -13,6 +14,7 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -107,5 +109,24 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 			permissionMapper.updateById(permissionQuery);
 		}
 		userPermissions.invalidate(uid);
+	}
+
+	@Override
+	public List<Group> getGroups(long uid){
+		Set<Permission> permissions = getUserPermissions(uid);
+		List<Group> groups = new ArrayList<>();
+		for (Permission permission : permissions) {
+			if (permission.getExpiry() == 0 || permission.getExpiry() > System.currentTimeMillis()) {
+				if (permission.getPermission().startsWith("group.")) {
+					try {
+						Group group = Group.valueOf(permission.getPermission().substring(6));
+						groups.add(group);
+					}catch (IllegalArgumentException e){
+						continue;
+					}
+				}
+			}
+		}
+		return groups;
 	}
 }

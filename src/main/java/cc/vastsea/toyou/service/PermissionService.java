@@ -1,8 +1,10 @@
 package cc.vastsea.toyou.service;
 
 import cc.vastsea.toyou.model.entity.Permission;
+import cc.vastsea.toyou.model.enums.Group;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
 import java.util.Set;
 
 public interface PermissionService extends IService<Permission> {
@@ -17,4 +19,6 @@ public interface PermissionService extends IService<Permission> {
 	void removePermission(long uid, String permission);
 
 	void updatePermission(long uid, String permission, long expiry);
+
+    List<Group> getGroups(long uid);
 }

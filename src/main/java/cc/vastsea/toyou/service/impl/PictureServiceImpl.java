@@ -11,6 +11,9 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Position;
+import net.coobird.thumbnailator.geometry.Positions;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -25,6 +28,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 @Service
 @Slf4j
@@ -32,8 +37,9 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 	@Resource
 	private PictureMapper pictureMapper;
 
+	@Async("asyncTaskExecutor")
 	@Override
-	public Picture uploadPicture(MultipartFile file) throws IOException {
+	public Future<Picture> uploadPicture(MultipartFile file) throws IOException {
 		if (file == null || file.isEmpty()) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "图片为空");
 		}
@@ -49,7 +55,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 		ByteArrayOutputStream waterStream = new ByteArrayOutputStream();
 		// 获取jar包资源文件的logo.svg将其初始化为BufferedImage
 		InputStream logo = this.getClass().getClassLoader().getResourceAsStream("logo.png");
-		// 将logo缩小为原来的0.2倍
+		// 将logo缩小为图片的0.2倍
+		// width : height = 4.6 : 1
+		double scale = Math.max(((double) width / 8) / 4.6, (double) height / 8);
+		// todo double scaleMax =
 		int logoWidth = width / 8;
 		int logoHeight = height / 8;
 		BufferedImage bufferedImage = Thumbnails.of(logo).size(logoWidth, logoHeight).asBufferedImage();
@@ -77,7 +86,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 		queryWrapper.eq("pid", md5);
 		Picture pic = pictureMapper.selectOne(queryWrapper);
 		if (pic != null) {
-			return pic;
+			return CompletableFuture.completedFuture(pic);
 		}
 		// 获取图片类型拓展名
 		String ext = Objects.requireNonNull(file.getOriginalFilename()).substring(file.getOriginalFilename().lastIndexOf("."));
@@ -111,6 +120,10 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 
 		boolean saveResult = this.save(picture);
 
-		return picture;
+		if (!saveResult) {
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
+		}
+
+		return CompletableFuture.completedFuture(picture);
 	}
 }
