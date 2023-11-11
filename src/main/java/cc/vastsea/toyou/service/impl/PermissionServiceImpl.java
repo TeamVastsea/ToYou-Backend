@@ -112,7 +112,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 	}
 
 	@Override
-	public List<Group> getGroups(long uid){
+	public List<Group> getGroups(long uid) {
 		Set<Permission> permissions = getUserPermissions(uid);
 		List<Group> groups = new ArrayList<>();
 		for (Permission permission : permissions) {
@@ -121,12 +121,23 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 					try {
 						Group group = Group.valueOf(permission.getPermission().substring(6));
 						groups.add(group);
-					}catch (IllegalArgumentException e){
-						continue;
+					} catch (IllegalArgumentException ignored) {
 					}
 				}
 			}
 		}
 		return groups;
+	}
+
+	@Override
+	public Group getMaxPriorityGroup(long uid) {
+		List<Group> groups = getGroups(uid);
+		Group maxPriorityGroup = Group.DEFAULT;
+		for (Group group : groups) {
+			if (group.getPriority() > maxPriorityGroup.getPriority()) {
+				maxPriorityGroup = group;
+			}
+		}
+		return maxPriorityGroup;
 	}
 }

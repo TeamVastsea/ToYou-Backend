@@ -1,5 +1,7 @@
 package cc.vastsea.toyou.service.impl;
 
+import cc.vastsea.toyou.common.StatusCode;
+import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.mapper.UserPictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
@@ -15,27 +17,28 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserPicture> implements UserPictureService {
+	public static final Cache<Long, Set<UserPicture>> userPictures = CaffeineFactory.newBuilder()
+			.expireAfterWrite(1, TimeUnit.DAYS)
+			.build();
 	@Resource
 	private UserPictureMapper userPictureMapper;
 	@Resource
 	private PictureMapper pictureMapper;
-	public static final Cache<Long, Set<Picture>> userPictures = CaffeineFactory.newBuilder()
-			.expireAfterWrite(1, TimeUnit.DAYS)
-			.build();
 
 	@Override
-	public Set<Picture> getUserPictures(long uid){
-		Set<Picture> pictures = userPictures.getIfPresent(uid);
+	public Set<UserPicture> getUserPictures(long uid) {
+		Set<UserPicture> pictures = userPictures.getIfPresent(uid);
 		if (pictures == null) {
-			Picture pictureQuery = new Picture();
-			QueryWrapper<Picture> queryWrapper = new QueryWrapper<>(pictureQuery);
+			UserPicture pictureQuery = new UserPicture();
+			QueryWrapper<UserPicture> queryWrapper = new QueryWrapper<>(pictureQuery);
 			queryWrapper.eq("uid", uid);
-			List<Picture> lps = pictureMapper.selectList(queryWrapper);
+			List<UserPicture> lps = userPictureMapper.selectList(queryWrapper);
 			pictures = Set.copyOf(lps);
 			userPictures.put(uid, pictures);
 		}
@@ -43,12 +46,30 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 	}
 
 	@Override
-	public long getUserCurrentSize(long uid){
-		Set<Picture> pictures = getUserPictures(uid);
-		long size = pictures.stream().mapToLong(Picture::getSize).sum();
-		return size;
+	public long getUsedStorage(long uid) {
+		Set<UserPicture> pictures = getUserPictures(uid);
+		long usedStorage = 0;
+		for (UserPicture picture : pictures) {
+			Picture pictureQuery = new Picture();
+			pictureQuery.setPid(picture.getPid());
+			Picture p = pictureMapper.selectOne(new QueryWrapper<>(pictureQuery));
+			usedStorage += p.getSize();
+		}
+		return usedStorage;
 	}
 
-
-
+	@Override
+	public void addUserPicture(long uid, String pid, String fileName) {
+		UserPicture userPicture = new UserPicture();
+		UUID uuid = UUID.randomUUID();
+		userPicture.setUuid(uuid.toString());
+		userPicture.setUid(uid);
+		userPicture.setPid(pid);
+		userPicture.setFileName(fileName);
+		boolean saveResult = this.save(userPicture);
+		if (!saveResult) {
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
+		}
+		userPictures.invalidate(uid);
+	}
 }
