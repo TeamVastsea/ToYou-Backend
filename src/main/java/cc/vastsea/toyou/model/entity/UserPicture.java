@@ -24,6 +24,7 @@ public class UserPicture implements Serializable {
 	private Long id;
 	private String uuid;
 	private Long uid;
+	private String pid;
 	private String fileName;
 	private Long downloads;
 	private Boolean isPublic;

@@ -8,6 +8,7 @@
         <id property="id" column="id" jdbcType="BIGINT"/>
         <result property="uuid" column="uuid" jdbcType="VARCHAR"/>
         <result property="uid" column="uid" jdbcType="BIGINT"/>
+        <result property="pid" column="pid" jdbcType="VARCHAR"/>
         <result property="fileName" column="fileName" jdbcType="VARCHAR"/>
         <result property="downloads" column="downloads" jdbcType="BIGINT"/>
         <result property="isPublic" column="isPublic" jdbcType="BOOLEAN"/>
@@ -17,6 +18,6 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, uuid, uid, fileName, downloads, isPublic, createTime, updateTime, available
+        id, uuid, uid, pid, fileName, downloads, isPublic, createTime, updateTime, available
     </sql>
 </mapper>
