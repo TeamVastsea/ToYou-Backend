@@ -43,7 +43,7 @@ public class User implements Serializable {
 		UserVO userVO = new UserVO();
 		userVO.setUid(this.getUid());
 		userVO.setEmail(this.getEmail());
-		userVO.setUsername(this.getEmail());
+		userVO.setUsername(this.getUsername());
 		userVO.setCreateTime(this.getCreateTime());
 		userVO.setUpdateTime(this.getUpdateTime());
 
