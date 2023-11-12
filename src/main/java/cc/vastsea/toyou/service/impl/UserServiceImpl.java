@@ -212,5 +212,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			throw new BusinessException(StatusCode.UNAUTHORIZED, "未登录");
 		}
 		request.getSession().removeAttribute(USER_LOGIN_STATE);
+
+		String token = request.getHeader("token");
+		UUID tokenUUID = UUID.fromString(token);
+		userLoginToken.invalidate(tokenUUID);
 	}
 }

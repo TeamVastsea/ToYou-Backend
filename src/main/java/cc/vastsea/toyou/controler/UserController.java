@@ -67,7 +67,7 @@ public class UserController {
 		return new ResponseEntity<>(userVO, headers, StatusCode.OK);
 	}
 
-	@DeleteMapping("/logout")
+	@DeleteMapping("/token")
 	public ResponseEntity<String> userLogout(HttpServletRequest request) {
 		userService.userLogout(request);
 		return new ResponseEntity<>("success", null, StatusCode.OK);
