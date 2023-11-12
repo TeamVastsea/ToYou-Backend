@@ -1,9 +1,9 @@
-name: Project Build Test
+name: Project Release
 
 on:
-  workflow_dispatch:
   push:
-  pull_request:
+    tags:
+      - '*'
 
 jobs:
   build:
@@ -32,3 +32,19 @@ jobs:
           name: build-result
           path: |
             build/libs
+  release:
+    name: Download back the built projects and release them
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download back the built projects
+        uses: actions/download-artifact@v3
+        with:
+          name: build-result
+      - name: Create Release
+        uses: ncipollo/release-action@v1.12.0
+        with:
+          artifacts: "build/libs/*.jar"
+          token: ${{ secrets.GITHUB_TOKEN }}
