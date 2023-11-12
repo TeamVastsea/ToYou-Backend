@@ -205,4 +205,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		}
 		return this.getById(uid);
 	}
+
+	@Override
+	public void userLogout(HttpServletRequest request) {
+		if (request.getSession().getAttribute(USER_LOGIN_STATE) == null) {
+			throw new BusinessException(StatusCode.UNAUTHORIZED, "未登录");
+		}
+		request.getSession().removeAttribute(USER_LOGIN_STATE);
+	}
 }

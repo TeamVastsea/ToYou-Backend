@@ -26,4 +26,6 @@ public interface UserService extends IService<User> {
 	String getToken(Long uid);
 
 	User tokenLogin(UUID token);
+
+	void userLogout(HttpServletRequest request);
 }

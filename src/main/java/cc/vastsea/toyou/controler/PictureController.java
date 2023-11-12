@@ -2,6 +2,8 @@ package cc.vastsea.toyou.controler;
 
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
+import cc.vastsea.toyou.model.dto.PictureMetaGetResponse;
+import cc.vastsea.toyou.model.dto.UserPictureListRequest;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.model.entity.UserPicture;
@@ -10,10 +12,13 @@ import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.service.PictureService;
 import cc.vastsea.toyou.service.UserPictureService;
 import cc.vastsea.toyou.service.UserService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -92,8 +97,8 @@ public class PictureController {
 		return new ResponseEntity<>("success", null, StatusCode.OK);
 	}
 
-	@GetMapping("/picture/{id}/meta")
-	public ResponseEntity<Picture> getPictureMeta(@PathVariable("id") Long id, HttpServletRequest request) {
+	@GetMapping("/{id}/meta")
+	public ResponseEntity<PictureMetaGetResponse> getPictureMeta(@PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getLoginUser(request);
 		long uid = user.getUid();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
@@ -101,6 +106,33 @@ public class PictureController {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
 		}
 		Picture picture = pictureService.getById(userPicture.getPid());
-		return new ResponseEntity<>(picture, null, StatusCode.OK);
+		PictureMetaGetResponse pictureMetaGetResponse = new PictureMetaGetResponse();
+		BeanUtils.copyProperties(picture, pictureMetaGetResponse);
+		BeanUtils.copyProperties(userPicture, pictureMetaGetResponse);
+		return new ResponseEntity<>(pictureMetaGetResponse, null, StatusCode.OK);
+	}
+
+	@GetMapping("")
+	public ResponseEntity<Page<UserPicture>> getUserPictures(UserPictureListRequest userPictureListRequest, HttpServletRequest request) {
+		if (userPictureListRequest == null) {
+			throw new BusinessException(StatusCode.FORBIDDEN, "参数错误");
+		}
+		User user = userService.getLoginUser(request);
+		long uid = user.getUid();
+		userPictureListRequest.setUid(uid);
+
+		UserPicture userPictureQuery = new UserPicture();
+		BeanUtils.copyProperties(userPictureListRequest, userPictureQuery);
+		long current = userPictureListRequest.getCurrent();
+		long size = userPictureListRequest.getPageSize();
+
+		// 限制爬虫
+		if (size > 100) {
+			throw new BusinessException(StatusCode.FORBIDDEN, "参数错误");
+		}
+
+		QueryWrapper<UserPicture> queryWrapper = new QueryWrapper<>(userPictureQuery);
+		Page<UserPicture> userPicturePage = userPictureService.page(new Page<>(current, size), queryWrapper);
+		return new ResponseEntity<>(userPicturePage, null, StatusCode.OK);
 	}
 }

@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +40,7 @@ public class UserController {
 			return new ResponseEntity<>("exists", null, StatusCode.OK);
 		}
 		mailService.verifyEmail(email, ecr.getCode());
-		return new ResponseEntity<>("created", null, StatusCode.CREATED);
+		return new ResponseEntity<>("success", null, StatusCode.CREATED);
 	}
 
 	@GetMapping("/{uid}")
@@ -64,5 +65,11 @@ public class UserController {
 		headers.add(USER_TOKEN_HEADER, userService.getToken(userVO.getUid()));
 
 		return new ResponseEntity<>(userVO, headers, StatusCode.OK);
+	}
+
+	@DeleteMapping("/logout")
+	public ResponseEntity<String> userLogout(HttpServletRequest request) {
+		userService.userLogout(request);
+		return new ResponseEntity<>("success", null, StatusCode.OK);
 	}
 }
