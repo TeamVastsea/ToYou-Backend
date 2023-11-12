@@ -26,6 +26,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.apache.commons:commons-pool2'
+    implementation 'org.jetbrains:annotations:24.0.0'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'

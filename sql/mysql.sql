@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS `user_picture`
     pid        VARCHAR(32)                        NOT NULL COMMENT 'pid-md5',
     fileName   VARCHAR(128)                       NOT NULL COMMENT '文件名',
     downloads  BIGINT   DEFAULT 0                 NOT NULL COMMENT '下载次数',
-    isPublic   BOOL     DEFAULT FALSE             NOT NULL COMMENT '是否公开',
+    shareMode  INTEGER  DEFAULT 0                 NOT NULL COMMENT '分享模式',
     createTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',
     updateTime DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     available  BOOL     DEFAULT TRUE              NOT NULL COMMENT '是否可用'

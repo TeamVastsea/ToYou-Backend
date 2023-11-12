@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
+import org.springframework.beans.BeanUtils;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -41,12 +42,7 @@ public class User implements Serializable {
 
 	public UserVO toUserVO() {
 		UserVO userVO = new UserVO();
-		userVO.setUid(this.getUid());
-		userVO.setEmail(this.getEmail());
-		userVO.setUsername(this.getUsername());
-		userVO.setCreateTime(this.getCreateTime());
-		userVO.setUpdateTime(this.getUpdateTime());
-
+		BeanUtils.copyProperties(this, userVO);
 		return userVO;
 	}
 }

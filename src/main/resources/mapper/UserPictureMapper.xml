@@ -11,13 +11,13 @@
         <result property="pid" column="pid" jdbcType="VARCHAR"/>
         <result property="fileName" column="fileName" jdbcType="VARCHAR"/>
         <result property="downloads" column="downloads" jdbcType="BIGINT"/>
-        <result property="isPublic" column="isPublic" jdbcType="BOOLEAN"/>
+        <result property="shareMode" column="shareMode" jdbcType="INTEGER"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
         <result property="available" column="available" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, uuid, uid, pid, fileName, downloads, isPublic, createTime, updateTime, available
+        id, uuid, uid, pid, fileName, downloads, shareMode, createTime, updateTime, available
     </sql>
 </mapper>

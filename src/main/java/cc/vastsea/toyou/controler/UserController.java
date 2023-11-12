@@ -1,6 +1,5 @@
 package cc.vastsea.toyou.controler;
 
-import cc.vastsea.toyou.annotation.AuthCheck;
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
@@ -44,7 +43,6 @@ public class UserController {
 	}
 
 	@GetMapping("/{uid}")
-	@AuthCheck(any = "user.get")
 	public ResponseEntity<UserVO> getUser(@PathVariable("uid") Long uid, HttpServletRequest request) {
 		User user = userService.getUserByUid(uid, request);
 		UserVO userVO = new UserVO();

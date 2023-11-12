@@ -27,7 +27,7 @@ public class UserPicture implements Serializable {
 	private String pid;
 	private String fileName;
 	private Long downloads;
-	private Boolean isPublic;
+	private Integer shareMode;
 	private Date createTime;
 	private Date updateTime;
 	@TableLogic

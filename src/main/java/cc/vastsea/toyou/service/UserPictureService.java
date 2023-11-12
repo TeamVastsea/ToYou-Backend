@@ -11,4 +11,12 @@ public interface UserPictureService extends IService<UserPicture> {
 	long getUsedStorage(long uid);
 
 	void addUserPicture(long uid, String pid, String fileName);
+
+	boolean isExistSameName(long uid, String fileName);
+
+	boolean isPictureBelongToUser(long uid, String pid);
+
+	UserPicture getUserPicture(long uid, Long id);
+
+	void updateShareMode(UserPicture userPicture, int shareMode);
 }

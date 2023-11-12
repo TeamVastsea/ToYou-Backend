@@ -72,4 +72,47 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 		}
 		userPictures.invalidate(uid);
 	}
+
+	@Override
+	public boolean isExistSameName(long uid, String fileName) {
+		Set<UserPicture> pictures = getUserPictures(uid);
+		for (UserPicture picture : pictures) {
+			if (picture.getFileName().equalsIgnoreCase(fileName)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public boolean isPictureBelongToUser(long uid, String pid) {
+		Set<UserPicture> pictures = getUserPictures(uid);
+		for (UserPicture picture : pictures) {
+			if (picture.getPid().equals(pid)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	@Override
+	public UserPicture getUserPicture(long uid, Long id) {
+		Set<UserPicture> pictures = getUserPictures(uid);
+		for (UserPicture picture : pictures) {
+			if (picture.getId().equals(id)) {
+				return picture;
+			}
+		}
+		return null;
+	}
+
+	@Override
+	public void updateShareMode(UserPicture userPicture, int shareMode) {
+		userPicture.setShareMode(shareMode);
+		boolean updateResult = this.updateById(userPicture);
+		if (!updateResult) {
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "更新失败，数据库错误");
+		}
+		userPictures.invalidate(userPicture.getUid());
+	}
 }
