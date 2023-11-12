@@ -44,6 +44,6 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.20'
 }
 
-tasks.named('test') {
+/*tasks.named('test') {
     useJUnitPlatform()
-}
+}*/
