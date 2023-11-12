@@ -6,18 +6,16 @@
 
     <resultMap id="BaseResultMap" type="cc.vastsea.toyou.model.entity.UserPicture">
         <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="uuid" column="uuid" jdbcType="VARCHAR"/>
         <result property="uid" column="uid" jdbcType="BIGINT"/>
         <result property="pid" column="pid" jdbcType="VARCHAR"/>
         <result property="fileName" column="fileName" jdbcType="VARCHAR"/>
         <result property="downloads" column="downloads" jdbcType="BIGINT"/>
-        <result property="shareMode" column="shareMode" jdbcType="INTEGER"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
         <result property="available" column="available" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, uuid, uid, pid, fileName, downloads, shareMode, createTime, updateTime, available
+        id, uid, pid, fileName, downloads, createTime, updateTime, available
     </sql>
 </mapper>

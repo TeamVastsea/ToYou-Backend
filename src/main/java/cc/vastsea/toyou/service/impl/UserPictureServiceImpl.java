@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -61,8 +60,6 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 	@Override
 	public void addUserPicture(long uid, String pid, String fileName) {
 		UserPicture userPicture = new UserPicture();
-		UUID uuid = UUID.randomUUID();
-		userPicture.setUuid(uuid.toString());
 		userPicture.setUid(uid);
 		userPicture.setPid(pid);
 		userPicture.setFileName(fileName);
@@ -107,12 +104,16 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 	}
 
 	@Override
-	public void updateShareMode(UserPicture userPicture, int shareMode) {
-		userPicture.setShareMode(shareMode);
+	public void setDownloads(long id, long downloads) {
+		UserPicture userPicture = userPictureMapper.selectById(id);
+		if (userPicture == null) {
+			throw new BusinessException(StatusCode.NOT_FOUND, "图片不存在");
+		}
+		userPicture.setDownloads(downloads);
 		boolean updateResult = this.updateById(userPicture);
 		if (!updateResult) {
+			log.error("更新图片下载次数失败，userPicture:{}", userPicture);
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "更新失败，数据库错误");
 		}
-		userPictures.invalidate(userPicture.getUid());
 	}
 }

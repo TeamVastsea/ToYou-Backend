@@ -22,17 +22,11 @@ public class Permission implements Serializable {
 	 */
 	@TableId(type = IdType.AUTO)
 	private Long id;
-
 	private Long uid;
-
 	private String permission;
-
 	private Long expiry;
-
 	private Date createTime;
-
 	private Date updateTime;
-
 	@TableLogic
 	private Boolean available;
 }

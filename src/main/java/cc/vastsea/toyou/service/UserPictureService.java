@@ -18,5 +18,5 @@ public interface UserPictureService extends IService<UserPicture> {
 
 	UserPicture getUserPicture(long uid, Long id);
 
-	void updateShareMode(UserPicture userPicture, int shareMode);
+	void setDownloads(long id, long downloads);
 }

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cc.vastsea.toyou.mapper.ShareMapper">
+
+    <resultMap id="BaseResultMap" type="cc.vastsea.toyou.model.entity.Share">
+        <id property="sid" column="sid" jdbcType="VARCHAR"/>
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="downloads" column="downloads" jdbcType="BIGINT"/>
+        <result property="shareMode" column="shareMode" jdbcType="INTEGER"/>
+        <result property="expiry" column="expiry" jdbcType="BIGINT"/>
+        <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
+        <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
+        <result property="available" column="available" jdbcType="BOOLEAN"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        sid, id, password, permission, downloads, expiry, createTime, updateTime, available
+    </sql>
+</mapper>

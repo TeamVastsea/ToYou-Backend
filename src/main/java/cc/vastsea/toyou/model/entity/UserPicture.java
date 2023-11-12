@@ -22,12 +22,10 @@ public class UserPicture implements Serializable {
 	 */
 	@TableId(type = IdType.AUTO)
 	private Long id;
-	private String uuid;
 	private Long uid;
 	private String pid;
 	private String fileName;
 	private Long downloads;
-	private Integer shareMode;
 	private Date createTime;
 	private Date updateTime;
 	@TableLogic
