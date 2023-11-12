@@ -5,8 +5,10 @@ import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.service.PictureService;
+import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
@@ -28,12 +30,30 @@ import java.nio.file.Paths;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> implements PictureService {
+	public static final Cache<String, Picture> pictureCache = CaffeineFactory.newBuilder()
+			.expireAfterWrite(15, TimeUnit.MINUTES)
+			.build();
 	@Resource
 	private PictureMapper pictureMapper;
+
+	@Override
+	public Picture getPicture(String pid) {
+		Picture picture = pictureCache.getIfPresent(pid);
+		if (picture != null) {
+			return picture;
+		}
+		picture = pictureMapper.selectById(pid);
+		if (picture == null) {
+			throw new BusinessException(StatusCode.NOT_FOUND, "图片不存在");
+		}
+		pictureCache.put(pid, picture);
+		return picture;
+	}
 
 	@Async("asyncTaskExecutor")
 	@Override

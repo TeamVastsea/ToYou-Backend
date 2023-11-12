@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.util.concurrent.Future;
 
 public interface PictureService extends IService<Picture> {
+	Picture getPicture(String pid);
+
 	@Async("asyncTaskExecutor")
 	Future<Picture> uploadPicture(MultipartFile file) throws IOException;
 }

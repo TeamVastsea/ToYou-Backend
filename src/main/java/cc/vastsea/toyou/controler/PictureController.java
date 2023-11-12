@@ -12,6 +12,7 @@ import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.model.entity.UserPicture;
 import cc.vastsea.toyou.model.enums.Group;
 import cc.vastsea.toyou.model.enums.ShareMode;
+import cc.vastsea.toyou.model.vo.UserPictureVO;
 import cc.vastsea.toyou.service.PermissionService;
 import cc.vastsea.toyou.service.PictureService;
 import cc.vastsea.toyou.service.ShareService;
@@ -19,6 +20,7 @@ import cc.vastsea.toyou.service.UserPictureService;
 import cc.vastsea.toyou.service.UserService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.plugins.pagination.PageDTO;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -43,6 +45,8 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/picture")
@@ -109,7 +113,7 @@ public class PictureController {
 		if (userPicture == null) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
 		}
-		Picture picture = pictureService.getById(userPicture.getPid());
+		Picture picture = pictureService.getPicture(userPicture.getPid());
 		PictureMetaGetResponse pictureMetaGetResponse = new PictureMetaGetResponse();
 		BeanUtils.copyProperties(picture, pictureMetaGetResponse);
 		BeanUtils.copyProperties(userPicture, pictureMetaGetResponse);
@@ -117,7 +121,7 @@ public class PictureController {
 	}
 
 	@GetMapping("")
-	public ResponseEntity<Page<UserPicture>> getUserPictures(UserPictureListRequest userPictureListRequest, HttpServletRequest request) {
+	public ResponseEntity<Page<UserPictureVO>> getUserPictures(UserPictureListRequest userPictureListRequest, HttpServletRequest request) {
 		if (userPictureListRequest == null) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "参数错误");
 		}
@@ -137,7 +141,17 @@ public class PictureController {
 
 		QueryWrapper<UserPicture> queryWrapper = new QueryWrapper<>(userPictureQuery);
 		Page<UserPicture> userPicturePage = userPictureService.page(new Page<>(current, size), queryWrapper);
-		return new ResponseEntity<>(userPicturePage, null, StatusCode.OK);
+		Page<UserPictureVO> userPictureVOPage = new PageDTO<>(userPicturePage.getCurrent(), userPicturePage.getSize(), userPicturePage.getTotal());
+		List<UserPictureVO> userPictureVOList = userPicturePage.getRecords().stream().map(userPicture -> {
+			UserPictureVO userPictureVO = new UserPictureVO();
+			BeanUtils.copyProperties(userPicture, userPictureVO);
+			Picture picture = pictureService.getPicture(userPicture.getPid());
+			long fileSize = picture.getSize();
+			userPictureVO.setSize(fileSize);
+			return userPictureVO;
+		}).collect(Collectors.toList());
+		userPictureVOPage.setRecords(userPictureVOList);
+		return new ResponseEntity<>(userPictureVOPage, null, StatusCode.OK);
 	}
 
 	@PostMapping("/share/{id}")
@@ -154,10 +168,7 @@ public class PictureController {
 
 	@GetMapping("/share/{uuid}")
 	public ResponseEntity<String> downloadPicture(String password, @PathVariable("uuid") String uuid, HttpServletRequest request, HttpServletResponse response) {
-		Share share = shareService.getById(uuid);
-		if (share == null) {
-			throw new BusinessException(StatusCode.FORBIDDEN, "未找到分享");
-		}
+		Share share = shareService.getShare(uuid);
 		if (!StringUtils.isAnyBlank(share.getPassword())) {
 			if (!share.getPassword().equals(password)) {
 				throw new BusinessException(StatusCode.FORBIDDEN, "密码错误");
@@ -226,7 +237,7 @@ public class PictureController {
 		String pid = userPicture.getPid();
 		String fileName = userPicture.getFileName();
 		ShareMode shareMode = ShareMode.of(picturePreviewRequest.getShareMode());
-		Picture picture = pictureService.getById(pid);
+		Picture picture = pictureService.getPicture(pid);
 		File pictureFile;
 		switch (shareMode) {
 			case PUBLIC -> {

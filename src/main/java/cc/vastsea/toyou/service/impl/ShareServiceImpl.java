@@ -8,20 +8,39 @@ import cc.vastsea.toyou.model.entity.Share;
 import cc.vastsea.toyou.model.entity.UserPicture;
 import cc.vastsea.toyou.model.enums.ShareMode;
 import cc.vastsea.toyou.service.ShareService;
+import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements ShareService {
+	public static final Cache<String, Share> shareCache = CaffeineFactory.newBuilder()
+			.expireAfterWrite(2, TimeUnit.MINUTES)
+			.build();
 	@Resource
 	private ShareMapper shareMapper;
 
+	@Override
+	public Share getShare(String uuid) {
+		Share share = shareCache.getIfPresent(uuid);
+		if (share != null) {
+			return share;
+		}
+		share = shareMapper.selectById(uuid);
+		if (share == null) {
+			throw new BusinessException(StatusCode.NOT_FOUND, "分享不存在");
+		}
+		shareCache.put(uuid, share);
+		return share;
+	}
 
 	@Override
 	public Share addShare(UserPicture userPicture, SharePictureRequest sharePictureRequest) {

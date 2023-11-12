@@ -119,7 +119,7 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 			if (permission.getExpiry() == 0 || permission.getExpiry() > System.currentTimeMillis()) {
 				if (permission.getPermission().startsWith("group.")) {
 					try {
-						Group group = Group.valueOf(permission.getPermission().substring(6));
+						Group group = Group.valueOf(permission.getPermission().substring(6).toUpperCase());
 						groups.add(group);
 					} catch (IllegalArgumentException ignored) {
 					}
