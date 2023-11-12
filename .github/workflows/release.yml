@@ -46,5 +46,5 @@ jobs:
       - name: Create Release
         uses: ncipollo/release-action@v1.12.0
         with:
-          artifacts: "./build/libs/*.jar"
+          artifacts: "build/libs/*.jar"
           token: ${{ secrets.GITHUB_TOKEN }}
