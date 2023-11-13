@@ -54,6 +54,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: build-result
+      - name: List files before release
+        run: |
+          echo "Files in build/libs/:"
+          ls -R build/libs/
       - name: Create Release
         uses: softprops/action-gh-release@v0.1.15
         with:
