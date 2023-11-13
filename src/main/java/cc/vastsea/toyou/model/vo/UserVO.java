@@ -35,6 +35,8 @@ public class UserVO implements Serializable {
 	public static class ExtendUserInformation {
 		private Long storageUsed;
 		private Group userGroup;
-		private Long validDate;
+		private Long groupStartDate;
+		private Long groupUpdateDate;
+		private Long groupEndDate;
 	}
 }

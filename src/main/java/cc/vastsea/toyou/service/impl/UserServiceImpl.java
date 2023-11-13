@@ -40,29 +40,33 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	@Override
 	public UserVO userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
 		User user;
-		String tokenString = request.getHeader(USER_TOKEN_HEADER);
-		if (tokenString != null) {//token
-			UUID token = UUID.fromString(tokenString);
-			user = tokenLogin(token);
-			userLoginToken.invalidate(token);
-		} else {
-			String email = userLoginRequest.getEmail();
-			String password = userLoginRequest.getPassword();
-			// 检查邮箱格式
-			if (!email.matches("^[a-zA-Z0-9._+-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$")) {
-				throw new BusinessException(StatusCode.BAD_REQUEST, "邮箱格式错误");
-			}
-			// 检查邮箱是否存在
-			String rawEmail = getRawEmail(email);
-			QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-			queryWrapper.eq("emailRaw", rawEmail);
-			user = userMapper.selectOne(queryWrapper);
-			if (user == null) {
-				throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱不存在");
-			}
-			// 检查密码
-			if (!PasswordUtil.checkPassword(password, user.getPassword())) {
-				throw new BusinessException(StatusCode.UNAUTHORIZED, "密码错误");
+		try {
+			user = getLoginUser(request);
+		}catch (Throwable e){
+			String tokenString = request.getHeader(USER_TOKEN_HEADER);
+			if (tokenString != null) {//token
+				UUID token = UUID.fromString(tokenString);
+				user = tokenLogin(token);
+				userLoginToken.invalidate(token);
+			} else {
+				String email = userLoginRequest.getEmail();
+				String password = userLoginRequest.getPassword();
+				// 检查邮箱格式
+				if (!email.matches("^[a-zA-Z0-9._+-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$")) {
+					throw new BusinessException(StatusCode.BAD_REQUEST, "邮箱格式错误");
+				}
+				// 检查邮箱是否存在
+				String rawEmail = getRawEmail(email);
+				QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+				queryWrapper.eq("emailRaw", rawEmail);
+				user = userMapper.selectOne(queryWrapper);
+				if (user == null) {
+					throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱不存在");
+				}
+				// 检查密码
+				if (!PasswordUtil.checkPassword(password, user.getPassword())) {
+					throw new BusinessException(StatusCode.UNAUTHORIZED, "密码错误");
+				}
 			}
 		}
 		//登录成功
@@ -222,11 +226,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 	@Override
 	public User getTokenLogin(HttpServletRequest request) {
-		String tokenString = request.getHeader(USER_TOKEN_HEADER);
-		if (tokenString == null) {
+		try {
 			return getLoginUser(request);
+		}catch (Throwable e){
+			String tokenString = request.getHeader(USER_TOKEN_HEADER);
+			UUID token = UUID.fromString(tokenString);
+			return tokenLogin(token);
 		}
-		UUID token = UUID.fromString(tokenString);
-		return tokenLogin(token);
 	}
 }

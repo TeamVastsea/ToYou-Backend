@@ -53,6 +53,9 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 			if (p.getPermission().equalsIgnoreCase(permission)) {
 				if (p.getExpiry() == 0 || p.getExpiry() > System.currentTimeMillis()) {
 					return true;
+				}else{
+					this.removeById(p.getId());
+					userPermissions.invalidate(uid);
 				}
 			}
 		}
@@ -119,6 +122,9 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 			if (permission.getExpiry() == 0 || permission.getExpiry() > System.currentTimeMillis()) {
 				if (permission.getPermission().startsWith("group.")) {
 					groups.add(permission);
+				}else{
+					this.removeById(permission.getId());
+					userPermissions.invalidate(uid);
 				}
 			}
 		}

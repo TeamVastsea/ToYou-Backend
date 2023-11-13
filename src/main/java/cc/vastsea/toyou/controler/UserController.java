@@ -15,6 +15,7 @@ import cc.vastsea.toyou.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.jsqlparser.expression.DateTimeLiteralExpression;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
@@ -25,6 +26,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.Date;
 
 import static cc.vastsea.toyou.constant.UserConstant.*;
 
@@ -73,12 +76,14 @@ public class UserController {
 		Boolean ext = userLoginRequest.getExtended();
 		if (ext != null && ext) {
 			UserVO.ExtendUserInformation extended = new UserVO.ExtendUserInformation();
-			Permission permission = permissionService.getMaxPriorityGroupP(userVO.getUid());
+			Permission gp = permissionService.getMaxPriorityGroupP(userVO.getUid());
 			long usedStorage = userPictureService.getUsedStorage(userVO.getUid());
 
 			extended.setStorageUsed(usedStorage);
-			extended.setUserGroup(permission == null ? Group.DEFAULT :permission.getGroup());
-			extended.setValidDate(permission == null ? 0: permission.getExpiry());
+			extended.setUserGroup(gp == null ? Group.DEFAULT :gp.getGroup());
+			extended.setGroupEndDate(gp == null ? 0: gp.getExpiry());
+			extended.setGroupStartDate(gp == null ? null:gp.getGroup() == Group.DEFAULT?null:gp.getCreateTime().getTime());
+			extended.setGroupUpdateDate(gp == null ? null :gp.getGroup() == Group.DEFAULT?null:gp.getUpdateTime().getTime());
 			userVO.setExtend(extended);
 		}
 

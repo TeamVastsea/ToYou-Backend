@@ -31,7 +31,6 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
-    runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'com.google.guava:guava:32.1.1-jre'
@@ -43,6 +42,7 @@ dependencies {
     implementation 'org.apache.directory.studio:org.apache.commons.codec:1.8'
     implementation 'org.aspectj:aspectjweaver:1.9.20.1'
     implementation 'net.coobird:thumbnailator:0.4.20'
+    implementation "com.alipay.sdk:alipay-sdk-java-v3:2.7.10.ALL"
 }
 
 /*tasks.named('test') {

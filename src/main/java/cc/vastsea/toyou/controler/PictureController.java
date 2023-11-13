@@ -191,18 +191,10 @@ public class PictureController {
 		Picture picture = pictureService.getById(pid);
 		File pictureFile;
 		switch (shareMode) {
-			case PUBLIC -> {
-				pictureFile = new File(picture.getWatermark());
-			}
-			case PUBLIC_COMPRESS -> {
-				pictureFile = new File(picture.getThumbnail());
-			}
-			case PUBLIC_ORIGINAL -> {
-				pictureFile = new File(picture.getOriginal());
-			}
-			default -> {
-				throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "文件系统异常");
-			}
+			case PUBLIC -> pictureFile = new File(picture.getWatermark());
+			case PUBLIC_COMPRESS -> pictureFile = new File(picture.getThumbnail());
+			case PUBLIC_ORIGINAL -> pictureFile = new File(picture.getOriginal());
+			default -> throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "文件系统异常");
 		}
 		try {
 			InputStream is = new FileInputStream(pictureFile);
@@ -243,15 +235,9 @@ public class PictureController {
 		Picture picture = pictureService.getPicture(pid);
 		File pictureFile;
 		switch (shareMode) {
-			case PUBLIC -> {
-				pictureFile = new File(picture.getWatermark());
-			}
-			case PUBLIC_COMPRESS -> {
-				pictureFile = new File(picture.getThumbnail());
-			}
-			default -> {
-				pictureFile = new File(picture.getOriginal());
-			}
+			case PUBLIC -> pictureFile = new File(picture.getWatermark());
+			case PUBLIC_COMPRESS -> pictureFile = new File(picture.getThumbnail());
+			default -> pictureFile = new File(picture.getOriginal());
 		}
 		try {
 			InputStream is = new FileInputStream(pictureFile);
