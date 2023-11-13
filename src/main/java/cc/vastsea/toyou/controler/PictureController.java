@@ -2,7 +2,6 @@ package cc.vastsea.toyou.controler;
 
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
-import cc.vastsea.toyou.model.dto.PictureMetaGetResponse;
 import cc.vastsea.toyou.model.dto.PicturePreviewRequest;
 import cc.vastsea.toyou.model.dto.SharePictureRequest;
 import cc.vastsea.toyou.model.dto.UserPictureListRequest;
@@ -113,12 +112,12 @@ public class PictureController {
 		if (userPicture == null) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
 		}
-		Long pictureSize = pictureService.getPicture(userPicture.getPid()).getSize();
+		long pictureSize = pictureService.getPicture(userPicture.getPid()).getSize();
 
-		UserPictureVO pictureMetaGetResponse = new UserPictureVO();
-		BeanUtils.copyProperties(userPicture, pictureMetaGetResponse);
-		pictureMetaGetResponse.setSize(pictureSize);
-		return new ResponseEntity<>(pictureMetaGetResponse, null, StatusCode.OK);
+		UserPictureVO userPictureVO = new UserPictureVO();
+		BeanUtils.copyProperties(userPicture, userPictureVO);
+		userPictureVO.setSize(pictureSize);
+		return new ResponseEntity<>(userPictureVO, null, StatusCode.OK);
 	}
 
 	@GetMapping("")

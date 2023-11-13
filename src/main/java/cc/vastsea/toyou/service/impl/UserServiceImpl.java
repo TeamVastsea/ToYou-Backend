@@ -53,8 +53,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 				throw new BusinessException(StatusCode.BAD_REQUEST, "邮箱格式错误");
 			}
 			// 检查邮箱是否存在
+			String rawEmail = getRawEmail(email);
 			QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-			queryWrapper.eq("email", email);
+			queryWrapper.eq("emailRaw", rawEmail);
 			user = userMapper.selectOne(queryWrapper);
 			if (user == null) {
 				throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱不存在");
@@ -107,6 +108,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		if (checkDuplicates(rawEmail)) {
 			throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱已被注册");
 		}
+
 		// 检查用户名，特殊符号只能使用-和_，其它不能使用。并且检查字符串个数，大于4小于16
 		if (!userCreateRequest.getUsername().matches("^[a-zA-Z0-9_-]{4,16}$")) {
 			throw new BusinessException(StatusCode.BAD_REQUEST, "用户名格式错误");
