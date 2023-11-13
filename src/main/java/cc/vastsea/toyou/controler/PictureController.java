@@ -106,17 +106,18 @@ public class PictureController {
 	}
 
 	@GetMapping("/{id}/meta")
-	public ResponseEntity<PictureMetaGetResponse> getPictureMeta(@PathVariable("id") Long id, HttpServletRequest request) {
+	public ResponseEntity<UserPictureVO> getPictureMeta(@PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getLoginUser(request);
 		long uid = user.getUid();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
 		if (userPicture == null) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
 		}
-		Picture picture = pictureService.getPicture(userPicture.getPid());
-		PictureMetaGetResponse pictureMetaGetResponse = new PictureMetaGetResponse();
-		BeanUtils.copyProperties(picture, pictureMetaGetResponse);
+		Long pictureSize = pictureService.getPicture(userPicture.getPid()).getSize();
+
+		UserPictureVO pictureMetaGetResponse = new UserPictureVO();
 		BeanUtils.copyProperties(userPicture, pictureMetaGetResponse);
+		pictureMetaGetResponse.setSize(pictureSize);
 		return new ResponseEntity<>(pictureMetaGetResponse, null, StatusCode.OK);
 	}
 
