@@ -219,4 +219,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		UUID tokenUUID = UUID.fromString(token);
 		userLoginToken.invalidate(tokenUUID);
 	}
+
+	@Override
+	public User getTokenLogin(HttpServletRequest request) {
+		String tokenString = request.getHeader(USER_TOKEN_HEADER);
+		if (tokenString == null) {
+			return getLoginUser(request);
+		}
+		UUID token = UUID.fromString(tokenString);
+		return tokenLogin(token);
+	}
 }

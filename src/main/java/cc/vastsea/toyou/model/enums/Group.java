@@ -4,7 +4,11 @@ import lombok.Getter;
 
 @Getter
 public enum Group {
-	DEFAULT(0, "默认", 0, 2048, 50);
+	DEFAULT(0, "默认", 0, 2048, 50),
+	STARTED(1, "入门", 30, 10240, 50),
+	ADVANCED(2, "进阶", 50, 51200, 100),
+	PROFESSIONAL(3, "专业", 150, 102400, 999999);
+
 	/**
 	 * 数字越大越优先
 	 */
@@ -14,7 +18,7 @@ public enum Group {
 	 */
 	final String name;
 	/**
-	 * 多少钱/月
+	 * 多少钱/月(单位:元CNY)
 	 */
 	final float price;
 	/**

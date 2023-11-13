@@ -28,4 +28,6 @@ public interface UserService extends IService<User> {
 	User tokenLogin(UUID token);
 
 	void userLogout(HttpServletRequest request);
+
+	User getTokenLogin(HttpServletRequest request);
 }

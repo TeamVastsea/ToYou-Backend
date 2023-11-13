@@ -20,7 +20,9 @@ public interface PermissionService extends IService<Permission> {
 
 	void updatePermission(long uid, String permission, long expiry);
 
-	List<Group> getGroups(long uid);
+	List<Permission> getGroups(long uid);
 
 	Group getMaxPriorityGroup(long uid);
+
+	Permission getMaxPriorityGroupP(long uid);
 }

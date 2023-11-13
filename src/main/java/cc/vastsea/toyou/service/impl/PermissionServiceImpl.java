@@ -112,17 +112,13 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 	}
 
 	@Override
-	public List<Group> getGroups(long uid) {
+	public List<Permission> getGroups(long uid) {
 		Set<Permission> permissions = getUserPermissions(uid);
-		List<Group> groups = new ArrayList<>();
+		List<Permission> groups = new ArrayList<>();
 		for (Permission permission : permissions) {
 			if (permission.getExpiry() == 0 || permission.getExpiry() > System.currentTimeMillis()) {
 				if (permission.getPermission().startsWith("group.")) {
-					try {
-						Group group = Group.valueOf(permission.getPermission().substring(6).toUpperCase());
-						groups.add(group);
-					} catch (IllegalArgumentException ignored) {
-					}
+					groups.add(permission);
 				}
 			}
 		}
@@ -131,13 +127,35 @@ public class PermissionServiceImpl extends ServiceImpl<PermissionMapper, Permiss
 
 	@Override
 	public Group getMaxPriorityGroup(long uid) {
-		List<Group> groups = getGroups(uid);
+		List<Permission> groups = getGroups(uid);
 		Group maxPriorityGroup = Group.DEFAULT;
-		for (Group group : groups) {
-			if (group.getPriority() > maxPriorityGroup.getPriority()) {
-				maxPriorityGroup = group;
+		for (Permission group : groups) {
+			try {
+				Group g = Group.valueOf(group.getPermission().substring(6).toUpperCase());
+				if (g.getPriority() > maxPriorityGroup.getPriority()) {
+					maxPriorityGroup = g;
+				}
+			} catch (IllegalArgumentException ignored) {
 			}
 		}
 		return maxPriorityGroup;
+	}
+
+	@Override
+	public Permission getMaxPriorityGroupP(long uid){
+		List<Permission> groups = getGroups(uid);
+		Group maxPriorityGroup = Group.DEFAULT;
+		Permission i = null;
+		for (Permission group : groups) {
+			try {
+				Group g = Group.valueOf(group.getPermission().substring(6).toUpperCase());
+				if (g.getPriority() > maxPriorityGroup.getPriority()) {
+					maxPriorityGroup = g;
+					i = group;
+				}
+			} catch (IllegalArgumentException ignored) {
+			}
+		}
+		return i;
 	}
 }

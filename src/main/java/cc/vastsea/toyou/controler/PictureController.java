@@ -45,7 +45,10 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
+import static cc.vastsea.toyou.constant.UserConstant.USER_TOKEN_HEADER;
 
 @RestController
 @RequestMapping("/picture")
@@ -64,7 +67,7 @@ public class PictureController {
 
 	@PostMapping("")
 	public ResponseEntity<String> uploadPicture(@NotNull String fileName, @RequestBody MultipartFile file, HttpServletRequest request) {
-		User user = userService.getLoginUser(request);
+		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
 		Group group = permissionService.getMaxPriorityGroup(uid);
 		long pictureSize = file.getSize();
@@ -94,7 +97,7 @@ public class PictureController {
 
 	@DeleteMapping("/{id}")
 	public ResponseEntity<String> deletePicture(@PathVariable("id") Long id, HttpServletRequest request) {
-		User user = userService.getLoginUser(request);
+		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
 		if (userPicture == null) {
@@ -106,7 +109,7 @@ public class PictureController {
 
 	@GetMapping("/{id}/meta")
 	public ResponseEntity<UserPictureVO> getPictureMeta(@PathVariable("id") Long id, HttpServletRequest request) {
-		User user = userService.getLoginUser(request);
+		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
 		if (userPicture == null) {
@@ -125,7 +128,7 @@ public class PictureController {
 		if (userPictureListRequest == null) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "参数错误");
 		}
-		User user = userService.getLoginUser(request);
+		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
 		userPictureListRequest.setUid(uid);
 
@@ -156,7 +159,7 @@ public class PictureController {
 
 	@PostMapping("/share/{id}")
 	public ResponseEntity<Share> sharePicture(SharePictureRequest sharePictureRequest, @PathVariable("id") Long id, HttpServletRequest request) {
-		User user = userService.getLoginUser(request);
+		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
 		if (userPicture == null) {
@@ -227,7 +230,7 @@ public class PictureController {
 
 	@GetMapping("/preview")
 	public ResponseEntity<InputStreamResource> previewPicture(PicturePreviewRequest picturePreviewRequest, HttpServletRequest request, HttpServletResponse response) {
-		User user = userService.getLoginUser(request);
+		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
 		long id = picturePreviewRequest.getId();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);

@@ -4,9 +4,13 @@ import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
 import cc.vastsea.toyou.model.dto.UserLoginRequest;
+import cc.vastsea.toyou.model.entity.Permission;
 import cc.vastsea.toyou.model.entity.User;
+import cc.vastsea.toyou.model.enums.Group;
 import cc.vastsea.toyou.model.vo.UserVO;
 import cc.vastsea.toyou.service.MailService;
+import cc.vastsea.toyou.service.PermissionService;
+import cc.vastsea.toyou.service.UserPictureService;
 import cc.vastsea.toyou.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
@@ -32,6 +36,10 @@ public class UserController {
 	private UserService userService;
 	@Resource
 	private MailService mailService;
+	@Resource
+	private PermissionService permissionService;
+	@Resource
+	private UserPictureService userPictureService;
 
 	@GetMapping("/email/{email}")
 	public ResponseEntity<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
@@ -60,6 +68,19 @@ public class UserController {
 	@GetMapping("")
 	public ResponseEntity<UserVO> userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
 		UserVO userVO = userService.userLogin(userLoginRequest, request);
+
+		// null
+		Boolean ext = userLoginRequest.getExtended();
+		if (ext != null && ext) {
+			UserVO.ExtendUserInformation extended = new UserVO.ExtendUserInformation();
+			Permission permission = permissionService.getMaxPriorityGroupP(userVO.getUid());
+			long usedStorage = userPictureService.getUsedStorage(userVO.getUid());
+
+			extended.setStorageUsed(usedStorage);
+			extended.setUserGroup(permission == null ? Group.DEFAULT :permission.getGroup());
+			extended.setValidDate(permission == null ? 0: permission.getExpiry());
+			userVO.setExtend(extended);
+		}
 
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add(USER_TOKEN_HEADER, userService.getToken(userVO.getUid()));

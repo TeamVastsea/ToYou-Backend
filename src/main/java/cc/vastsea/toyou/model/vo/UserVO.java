@@ -1,5 +1,6 @@
 package cc.vastsea.toyou.model.vo;
 
+import cc.vastsea.toyou.model.enums.Group;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -27,4 +28,13 @@ public class UserVO implements Serializable {
 	private Date createTime;
 
 	private Date updateTime;
+
+	private ExtendUserInformation extend;
+
+	@Data
+	public static class ExtendUserInformation {
+		private Long storageUsed;
+		private Group userGroup;
+		private Long validDate;
+	}
 }
