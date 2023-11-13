@@ -38,4 +38,4 @@ jobs:
         with:
           name: build-result
           path: |
-            build/libs
+            /release

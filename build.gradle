@@ -59,3 +59,22 @@ publishing {
         }
     }
 }
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+}
+
+javadoc {
+    options.encoding = "UTF-8"
+}
+
+// 编译后复制编译后文件到libs文件夹
+tasks.register('copyToLibs', Copy) {
+    from 'build/libs'
+    into 'release'
+}
+
+// 编译完成后自动执行
+tasks.named('build').configure {
+    finalizedBy('copyToLibs')
+}
