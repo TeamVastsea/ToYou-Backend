@@ -51,7 +51,7 @@ jobs:
         with:
           name: build-result
       - name: Create Release
-        uses: ncipollo/release-action@v1.12.0
+        uses: softprops/action-gh-release@v0.1.15
         with:
-          artifacts: "release/*.jar"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            build/libs/*.jar
