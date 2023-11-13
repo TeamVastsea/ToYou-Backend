@@ -2,7 +2,9 @@ name: Project Release
 
 on:
   push:
-    tags:
+    # tags:
+    #   - '*'
+    branches:
       - '*'
 
 jobs:
@@ -56,8 +58,8 @@ jobs:
           
       - name: List files before release
         run: |
-          echo "Files in build/libs/:"
-          ls -R ./build/libs
+          echo "Files in build-result:"
+          ls -R
           
       - name: Create Release
         uses: softprops/action-gh-release@v0.1.15
