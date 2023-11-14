@@ -45,10 +45,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import static cc.vastsea.toyou.constant.UserConstant.USER_TOKEN_HEADER;
 
 @RestController
 @RequestMapping("/picture")
