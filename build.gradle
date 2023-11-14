@@ -46,9 +46,9 @@ dependencies {
     implementation 'com.alipay.sdk:alipay-sdk-java:4.38.128.ALL'
 }
 
-tasks.named('test') {
+/*tasks.named('test') {
     useJUnitPlatform()
-}
+}*/
 
 publishing {
     publications {
