@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static cc.vastsea.toyou.constant.UserConstant.*;
@@ -47,7 +48,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			if (tokenString != null) {//token
 				UUID token = UUID.fromString(tokenString);
 				user = tokenLogin(token);
-				userLoginToken.invalidate(token);
 			} else {
 				String email = userLoginRequest.getEmail();
 				String password = userLoginRequest.getPassword();
@@ -204,8 +204,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	}
 
 	@Override
-	public User tokenLogin(UUID token) {
-		Long uid = userLoginToken.getIfPresent(token);
+	public User tokenLogin(UUID token) {Long uid = userLoginToken.getIfPresent(token);
 		if (uid == null) {
 			throw new BusinessException(StatusCode.UNAUTHORIZED, "token无效");
 		}

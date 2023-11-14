@@ -88,7 +88,9 @@ public class UserController {
 		}
 
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add(USER_TOKEN_HEADER, userService.getToken(userVO.getUid()));
+		if (request.getHeader(USER_TOKEN_HEADER) == null) {
+			headers.add(USER_TOKEN_HEADER, userService.getToken(userVO.getUid()));
+		}
 
 		return new ResponseEntity<>(userVO, headers, StatusCode.OK);
 	}
