@@ -28,6 +28,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-test'
     implementation 'org.apache.commons:commons-pool2'
     implementation 'org.jetbrains:annotations:24.0.0'
+    testImplementation 'junit:junit:4.13.1'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -42,12 +43,12 @@ dependencies {
     implementation 'org.apache.directory.studio:org.apache.commons.codec:1.8'
     implementation 'org.aspectj:aspectjweaver:1.9.20.1'
     implementation 'net.coobird:thumbnailator:0.4.20'
-    implementation "com.alipay.sdk:alipay-sdk-java-v3:2.7.10.ALL"
+    implementation 'com.alipay.sdk:alipay-sdk-java:4.38.128.ALL'
 }
 
-/*tasks.named('test') {
+tasks.named('test') {
     useJUnitPlatform()
-}*/
+}
 
 publishing {
     publications {
