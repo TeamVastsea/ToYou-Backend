@@ -229,8 +229,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			return getLoginUser(request);
 		} catch (Throwable e) {
 			String tokenString = request.getHeader(USER_TOKEN_HEADER);
-			UUID token = UUID.fromString(tokenString);
-			return tokenLogin(token);
+			try {
+				UUID token = UUID.fromString(tokenString);
+				return tokenLogin(token);
+			} catch (Throwable e1) {
+				throw new BusinessException(StatusCode.UNAUTHORIZED, "未登录");
+			}
 		}
 	}
 }

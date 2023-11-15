@@ -1,8 +1,14 @@
-package cc.vastsea.toyou.model.enums;
+package cc.vastsea.toyou.model.enums.pay;
 
+import lombok.Getter;
+
+@Getter
 public enum PayPlatform {
-	ALIPAY(1, "支付宝"),
-	WECHAT(2, "微信");
+	//支付宝扫码
+	ALIPAY(1, "支付宝(1)"),
+	// 支付宝跳转支付
+	ALIPAY_REDIRECT(2, "支付宝(2)"),
+	WECHAT(3, "微信(1)");
 	final int code;
 	final String desc;
 

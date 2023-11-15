@@ -26,6 +26,7 @@ public class Permission implements Serializable {
 	private Long uid;
 	private String permission;
 	private Long expiry;
+
 	private Date createTime;
 	private Date updateTime;
 	@TableLogic

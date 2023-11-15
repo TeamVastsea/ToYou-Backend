@@ -2,12 +2,19 @@ package cc.vastsea.toyou.controler;
 
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
+import cc.vastsea.toyou.model.dto.OrderCreationRequest;
+import cc.vastsea.toyou.model.entity.User;
+import cc.vastsea.toyou.model.enums.Group;
+import cc.vastsea.toyou.model.enums.pay.PayPlatform;
+import cc.vastsea.toyou.service.OrderService;
 import cc.vastsea.toyou.service.PayService;
+import cc.vastsea.toyou.service.UserService;
 import com.alipay.easysdk.factory.Factory;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +30,10 @@ import java.util.Map;
 public class PayController {
 	@Resource
 	private PayService payService;
+	@Resource
+	private UserService userService;
+	@Resource
+	private OrderService orderService;
 
 	@NotNull
 	private static Map<String, String> getParamsMap(HttpServletRequest request) {
@@ -41,9 +52,24 @@ public class PayController {
 		return params;
 	}
 
-	@GetMapping("/test")
-	public String test() {
-		return payService.test();
+	@GetMapping("")
+	public ResponseEntity<String> createOrder(OrderCreationRequest orderCreationRequest, HttpServletRequest request) {
+		User user = userService.getTokenLogin(request);
+		long uid = user.getUid();
+		// 判断目标组的金额是否可以被支付。
+		Group group = orderCreationRequest.getGroup();
+		if (group == null) {
+			throw new BusinessException(StatusCode.BAD_REQUEST, "组不存在");
+		}
+		if (group.getPrice() <= 0) {
+			throw new BusinessException(StatusCode.BAD_REQUEST, "该组不可支付");
+		}
+		PayPlatform payPlatform = orderCreationRequest.getPayPlatform();
+		if (payPlatform == null) {
+			throw new BusinessException(StatusCode.BAD_REQUEST, "支付平台错误");
+		}
+
+		return new ResponseEntity<>(orderCreationRequest.getGroup().getName() + orderCreationRequest.getPayPlatform().getDesc(), null, StatusCode.OK);
 	}
 
 	@PostMapping("/aliPay")

@@ -66,8 +66,9 @@ CREATE TABLE IF NOT EXISTS `order`
 (
     id            BIGINT AUTO_INCREMENT              NOT NULL COMMENT 'id' PRIMARY KEY,
     uid           BIGINT                             NOT NULL COMMENT 'uid',
-    outTradeNo    VARCHAR(32)                        NOT NULL COMMENT '商户订单号',
-    tradeNo       VARCHAR(32)                        NOT NULL COMMENT '交易号',
+    subject       VARCHAR(128)                       NOT NULL COMMENT '订单标题',
+    outTradeNo    VARCHAR(32)                        NOT NULL COMMENT '订单号',
+    tradeNo       VARCHAR(32)                        NOT NULL COMMENT '系统交易号',
     totalAmount   BIGINT                             NOT NULL COMMENT '订单金额(单位：分)',
     receiptAmount BIGINT                             NOT NULL COMMENT '实收金额(单位：分)',
     payPlatform   INTEGER  DEFAULT 0                 NOT NULL COMMENT '支付平台',

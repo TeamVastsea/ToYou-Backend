@@ -1,4 +1,4 @@
-package cc.vastsea.toyou.model.enums;
+package cc.vastsea.toyou.model.enums.pay;
 
 import lombok.Getter;
 
