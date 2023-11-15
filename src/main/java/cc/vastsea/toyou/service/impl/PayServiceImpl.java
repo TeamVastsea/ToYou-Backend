@@ -7,7 +7,7 @@ import cc.vastsea.toyou.util.pay.AliPayUtil;
 import cc.vastsea.toyou.util.pay.PaymentUtil;
 import com.alipay.easysdk.factory.Factory;
 import com.alipay.easysdk.kernel.util.ResponseChecker;
-import com.alipay.easysdk.payment.page.models.AlipayTradePagePayResponse;
+import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -40,10 +40,12 @@ public class PayServiceImpl implements PayService {
 		String tradeNo = PaymentUtil.generateTradeNumber();
 		String returnUrl = aliPayUtil.getDomain() + "/pay/aliPay";
 		try {
-			AlipayTradePagePayResponse response = Factory.Payment.Page().pay("test", tradeNo, "1.00", returnUrl);
+			// AlipayTradePagePayResponse response = Factory.Payment.Page().pay("test", tradeNo, "1.00", returnUrl);
+			AlipayTradePrecreateResponse response = Factory.Payment.FaceToFace().preCreate("test", tradeNo, "0.01");
 			// 3. 处理响应或异常
 			if (ResponseChecker.success(response)) {
-				return response.getBody();
+				return response.getQrCode();
+				// return response.getBody();
 			}
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "调用失败");
 		} catch (Exception e) {
