@@ -9,7 +9,7 @@ import java.net.InetAddress;
  * 网络工具类
  */
 @Slf4j
-public class NetUtils {
+public class NetUtil {
 
 	/**
 	 * 获取客户端 IP 地址

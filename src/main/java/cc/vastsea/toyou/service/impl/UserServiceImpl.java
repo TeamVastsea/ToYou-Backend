@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Random;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static cc.vastsea.toyou.constant.UserConstant.*;
@@ -43,7 +42,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		User user;
 		try {
 			user = getLoginUser(request);
-		}catch (Throwable e){
+		} catch (Throwable e) {
 			String tokenString = request.getHeader(USER_TOKEN_HEADER);
 			if (tokenString != null) {//token
 				UUID token = UUID.fromString(tokenString);
@@ -204,7 +203,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	}
 
 	@Override
-	public User tokenLogin(UUID token) {Long uid = userLoginToken.getIfPresent(token);
+	public User tokenLogin(UUID token) {
+		Long uid = userLoginToken.getIfPresent(token);
 		if (uid == null) {
 			throw new BusinessException(StatusCode.UNAUTHORIZED, "token无效");
 		}
@@ -227,10 +227,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	public User getTokenLogin(HttpServletRequest request) {
 		try {
 			return getLoginUser(request);
-		}catch (Throwable e){
+		} catch (Throwable e) {
 			String tokenString = request.getHeader(USER_TOKEN_HEADER);
-			UUID token = UUID.fromString(tokenString);
-			return tokenLogin(token);
+			try {
+				UUID token = UUID.fromString(tokenString);
+				return tokenLogin(token);
+			} catch (Throwable e1) {
+				throw new BusinessException(StatusCode.UNAUTHORIZED, "未登录");
+			}
 		}
 	}
 }

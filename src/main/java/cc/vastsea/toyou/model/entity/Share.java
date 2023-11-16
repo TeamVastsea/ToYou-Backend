@@ -24,6 +24,7 @@ public class Share implements Serializable {
 	private Long downloads;
 	private Integer shareMode;
 	private Long expiry;
+
 	private Date createTime;
 	private Date updateTime;
 	@TableLogic

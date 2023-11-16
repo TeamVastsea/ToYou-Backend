@@ -15,27 +15,28 @@ import java.util.Date;
 @TableName(value = "permission")
 @Data
 public class Permission implements Serializable {
-    @Serial
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
-    /**
-     * id
-     */
-    @TableId(type = IdType.AUTO)
-    private Long id;
-    private Long uid;
-    private String permission;
-    private Long expiry;
-    private Date createTime;
-    private Date updateTime;
-    @TableLogic
-    private Boolean available;
+	@Serial
+	@TableField(exist = false)
+	private static final long serialVersionUID = 1L;
+	/**
+	 * id
+	 */
+	@TableId(type = IdType.AUTO)
+	private Long id;
+	private Long uid;
+	private String permission;
+	private Long expiry;
 
-    public Group getGroup() {
-        try {
-            return Group.valueOf(permission.substring(6).toUpperCase());
-        } catch (IllegalArgumentException ignored) {
-            return Group.DEFAULT;
-        }
-    }
+	private Date createTime;
+	private Date updateTime;
+	@TableLogic
+	private Boolean available;
+
+	public Group getGroup() {
+		try {
+			return Group.valueOf(permission.substring(6).toUpperCase());
+		} catch (IllegalArgumentException ignored) {
+			return Group.DEFAULT;
+		}
+	}
 }

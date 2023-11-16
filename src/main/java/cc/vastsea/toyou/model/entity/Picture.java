@@ -26,6 +26,7 @@ public class Picture implements Serializable {
 	private String thumbnail;
 	private String watermark;
 	private Long size;
+
 	private Date createTime;
 	private Date updateTime;
 	@TableLogic
