@@ -222,7 +222,17 @@ public class PictureController {
 
 	@GetMapping("/preview")
 	public ResponseEntity<InputStreamResource> previewPicture(PicturePreviewRequest picturePreviewRequest, HttpServletRequest request, HttpServletResponse response) {
-		User user = userService.getTokenLogin(request);
+		User user = null;
+		if (picturePreviewRequest.getToken() != null) {
+			user = userService.tokenLogin(UUID.fromString(picturePreviewRequest.getToken()));
+		} else {
+			user = userService.getTokenLogin(request);
+		}
+
+		if (user == null) {
+			throw new BusinessException(StatusCode.BAD_REQUEST, "token失效");
+		}
+
 		long uid = user.getUid();
 		long id = picturePreviewRequest.getId();
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
