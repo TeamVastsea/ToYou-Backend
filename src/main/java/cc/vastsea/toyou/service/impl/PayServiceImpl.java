@@ -126,7 +126,7 @@ public class PayServiceImpl implements PayService {
 		String tradeNo = PaymentUtil.generateTradeNumber();
 		order.setOutTradeNo(tradeNo);
 		order.setUid(uid);
-		String subject = group.getName() + " " + month + "m";
+		String subject = "图邮" + group.getName() + " " + month + "个月";
 		order.setSubject(subject);
 		order.setPayPlatform(payPlatform.getCode());
 		int money = group.getPriceByMonth(month);

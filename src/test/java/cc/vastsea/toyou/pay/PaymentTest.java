@@ -8,7 +8,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 public class PaymentTest {
 	@Test
 	void test() {
-		long f = PaymentUtil.changeY2F("888");
+		int f = PaymentUtil.changeY2F("888");
 		System.out.println(f);
 		String y = PaymentUtil.changeF2Y(f);
 		System.out.println(y);
