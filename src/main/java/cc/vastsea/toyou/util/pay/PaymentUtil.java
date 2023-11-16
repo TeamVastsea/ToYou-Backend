@@ -53,26 +53,26 @@ public class PaymentUtil {
 	/**
 	 * 将分转换为元
 	 */
-	public static String changeF2Y(long amount) {
+	public static String changeF2Y(int amount) {
 		return String.format("%.2f", (double) amount / 100);
 	}
 
 	/**
 	 * 将元转换为分
 	 */
-	public static long changeY2F(String amount) {
+	public static int changeY2F(String amount) {
 		int index = amount.indexOf(".");
 		int length = amount.length();
-		long amLong;
+		int amInt;
 		if (index == -1) {
-			amLong = Long.parseLong(amount + "00");
+			amInt = Integer.parseInt(amount + "00");
 		} else if (length - index >= 3) {
-			amLong = Long.parseLong((amount.substring(0, index + 3)).replace(".", ""));
+			amInt = Integer.parseInt((amount.substring(0, index + 3)).replace(".", ""));
 		} else if (length - index == 2) {
-			amLong = Long.parseLong((amount.substring(0, index + 2)).replace(".", "") + 0);
+			amInt = Integer.parseInt((amount.substring(0, index + 2)).replace(".", "") + 0);
 		} else {
-			amLong = Long.parseLong((amount.substring(0, index + 1)).replace(".", "") + "00");
+			amInt = Integer.parseInt((amount.substring(0, index + 1)).replace(".", "") + "00");
 		}
-		return amLong;
+		return amInt;
 	}
 }

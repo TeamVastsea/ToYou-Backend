@@ -1,9 +1,16 @@
 package cc.vastsea.toyou.util.pay;
 
+import cc.vastsea.toyou.common.StatusCode;
+import cc.vastsea.toyou.exception.BusinessException;
+import cc.vastsea.toyou.model.enums.pay.TradeStatus;
 import com.alipay.easysdk.factory.Factory;
 import com.alipay.easysdk.kernel.Config;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 @Getter
 @Slf4j
@@ -16,12 +23,30 @@ public class AliPayUtil {
 
 	private final String publicKey;
 
-	public AliPayUtil(String domain, String appId, String privateKey, String publicKey) {
+	public AliPayUtil(String domain, String appId) {
 		this.domain = domain;
 		this.appId = appId;
-		this.privateKey = privateKey;
-		this.publicKey = publicKey;
-		Factory.setOptions(getOptions(false));
+		// 读取私钥和公钥
+		// 私钥路径"./foo/alipay/private.txt"
+		// 公钥路径"./foo/alipay/public.txt"
+		// 从文件中读取字符串，赋值给privateKey和publicKey
+		try {
+			this.privateKey = new String(Files.readAllBytes(Paths.get("./foo/alipay/privateKey.txt")));
+			this.publicKey = new String(Files.readAllBytes(Paths.get("./foo/alipay/publicKey.txt")));
+		} catch (IOException e) {
+			log.error("读取支付宝公钥和私钥失败", e);
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "读取支付宝公钥和私钥失败");
+		}
+		Factory.setOptions(getOptions(true));
+	}
+
+	public static TradeStatus getTradeStatus(String tradeStatus) {
+		return switch (tradeStatus) {
+			case "TRADE_SUCCESS" -> TradeStatus.SUCCESS;
+			case "TRADE_CLOSED" -> TradeStatus.CLOSED;
+			case "WAIT_BUYER_PAY" -> TradeStatus.NOTPAY;
+			default -> TradeStatus.UNKNOWN;
+		};
 	}
 
 	private Config getOptions(boolean certificate) {

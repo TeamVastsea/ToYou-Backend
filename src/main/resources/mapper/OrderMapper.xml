@@ -5,13 +5,12 @@
 <mapper namespace="cc.vastsea.toyou.mapper.OrderMapper">
 
     <resultMap id="BaseResultMap" type="cc.vastsea.toyou.model.entity.Order">
-        <id property="id" column="id" jdbcType="BIGINT"/>
+        <id property="outTradeNo" column="outTradeNo" jdbcType="VARCHAR"/>
         <result property="uid" column="uid" jdbcType="BIGINT"/>
         <result property="subject" column="subject" jdbcType="VARCHAR"/>
-        <result property="outTradeNo" column="outTradeNo" jdbcType="VARCHAR"/>
         <result property="tradeNo" column="tradeNo" jdbcType="VARCHAR"/>
-        <result property="totalAmount" column="totalAmount" jdbcType="BIGINT"/>
-        <result property="receiptAmount" column="receiptAmount" jdbcType="BIGINT"/>
+        <result property="totalAmount" column="totalAmount" jdbcType="INTEGER"/>
+        <result property="receiptAmount" column="receiptAmount" jdbcType="INTEGER"/>
         <result property="payPlatform" column="payPlatform" jdbcType="INTEGER"/>
         <result property="tradeStatus" column="tradeStatus" jdbcType="INTEGER"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
@@ -20,6 +19,6 @@
     </resultMap>
 
     <sql id="Base_Column_List">
-        id, uid, subject, outTradeNo, tradeNo, totalAmount, receiptAmount, payPlatform, tradeStatus, createTime, updateTime, available
+        outTradeNo, uid, subject, tradeNo, totalAmount, receiptAmount, payPlatform, tradeStatus, createTime, updateTime, available
     </sql>
 </mapper>

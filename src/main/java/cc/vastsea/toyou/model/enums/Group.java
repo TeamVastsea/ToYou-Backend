@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum Group {
-	DEFAULT(0, "默认", 0, 2048, 50),
-	STARTED(1, "入门", 30, 10240, 50),
-	ADVANCED(2, "进阶", 50, 51200, 100),
-	PROFESSIONAL(3, "专业", 150, 102400, 999999);
+	DEFAULT(0, "默认", 0, 2048, 50, 0),
+	STARTED(1, "入门", 30, 10240, 50, 0),
+	ADVANCED(2, "进阶", 50, 51200, 100, 0),
+	PROFESSIONAL(3, "专业", 150, 102400, 999999, 0);
 
 	/**
 	 * 数字越大越优先
@@ -30,12 +30,18 @@ public enum Group {
 	 */
 	final float restrictions;
 
-	Group(int priority, String name, float price, float storage, float restrictions) {
+	/**
+	 * 优惠百分比
+	 */
+	final float discount;
+
+	Group(int priority, String name, float price, float storage, float restrictions, float discount) {
 		this.priority = priority;
 		this.name = name;
 		this.price = price;
 		this.storage = storage;
 		this.restrictions = restrictions;
+		this.discount = discount;
 	}
 
 	public static long toByte(float mb) {
@@ -44,5 +50,30 @@ public enum Group {
 
 	public long getStorageByte() {
 		return toByte(storage);
+	}
+
+	/**
+	 * 根据月计算价格(单位:分)
+	 */
+	public int getPriceByMonth(int month) {
+		int price = (int) (this.price * 100);
+		if (discount > 0) {
+			// 计算折扣
+			float d = 1 - discount / 100;
+			price = (int) (price * d);
+		}
+		/*
+		  3个月95折
+		  6个月9折
+		  12个月85折
+		 */
+		if (month >= 3 && month < 6) {
+			price = (int) (price * 0.95);
+		} else if (month >= 6 && month < 12) {
+			price = (int) (price * 0.9);
+		} else if (month >= 12) {
+			price = (int) (price * 0.85);
+		}
+		return price;
 	}
 }

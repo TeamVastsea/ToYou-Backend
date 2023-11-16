@@ -62,15 +62,14 @@ CREATE TABLE IF NOT EXISTS `share`
     available  BOOL     DEFAULT TRUE              NOT NULL COMMENT '是否可用'
 );
 
-CREATE TABLE IF NOT EXISTS `order`
+CREATE TABLE IF NOT EXISTS `orders`
 (
-    id            BIGINT AUTO_INCREMENT              NOT NULL COMMENT 'id' PRIMARY KEY,
+    outTradeNo    VARCHAR(128)                       NOT NULL COMMENT '订单号' PRIMARY KEY,
     uid           BIGINT                             NOT NULL COMMENT 'uid',
     subject       VARCHAR(128)                       NOT NULL COMMENT '订单标题',
-    outTradeNo    VARCHAR(32)                        NOT NULL COMMENT '订单号',
-    tradeNo       VARCHAR(32)                        NOT NULL COMMENT '系统交易号',
+    tradeNo       VARCHAR(128)                       NULL COMMENT '系统交易号',
     totalAmount   BIGINT                             NOT NULL COMMENT '订单金额(单位：分)',
-    receiptAmount BIGINT                             NOT NULL COMMENT '实收金额(单位：分)',
+    receiptAmount BIGINT                             NULL COMMENT '实收金额(单位：分)',
     payPlatform   INTEGER  DEFAULT 0                 NOT NULL COMMENT '支付平台',
     tradeStatus   INTEGER  DEFAULT 0                 NOT NULL COMMENT '交易状态',
     createTime    DATETIME DEFAULT CURRENT_TIMESTAMP NOT NULL COMMENT '创建时间',

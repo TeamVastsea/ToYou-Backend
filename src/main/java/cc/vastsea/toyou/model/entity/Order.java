@@ -11,17 +11,17 @@ import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
-@TableName(value = "order")
+@TableName(value = "orders")
 @Data
 public class Order implements Serializable {
 	@Serial
 	@TableField(exist = false)
 	private static final long serialVersionUID = 1L;
 	/**
-	 * id
+	 * 订单号
 	 */
 	@TableId(type = IdType.AUTO)
-	private Long id;
+	private String outTradeNo;
 
 	/**
 	 * 关联用户UID
@@ -34,11 +34,6 @@ public class Order implements Serializable {
 	private String subject;
 
 	/**
-	 * 订单号
-	 */
-	private String outTradeNo;
-
-	/**
 	 * 系统交易号
 	 */
 	private String tradeNo;
@@ -46,12 +41,12 @@ public class Order implements Serializable {
 	/**
 	 * 订单金额(单位：分)
 	 */
-	private Long totalAmount;
+	private Integer totalAmount;
 
 	/**
 	 * 实收金额(单位：分)
 	 */
-	private Long receiptAmount;
+	private Integer receiptAmount;
 
 	/**
 	 * 支付平台

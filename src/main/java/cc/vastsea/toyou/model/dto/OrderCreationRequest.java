@@ -15,6 +15,7 @@ public class OrderCreationRequest implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	private Group group;
+	private Integer month;
 	private PayPlatform payPlatform;
-	private Integer amount;
+	private String returnUrl;
 }
