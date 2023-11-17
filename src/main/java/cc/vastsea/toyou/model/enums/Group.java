@@ -4,10 +4,10 @@ import lombok.Getter;
 
 @Getter
 public enum Group {
-	DEFAULT(0, "默认", 0, 2048, 50, 0),
-	STARTED(1, "入门", 30, 10240, 50, 0),
-	ADVANCED(2, "进阶", 50, 51200, 100, 0),
-	PROFESSIONAL(3, "专业", 150, 102400, 999999, 0);
+	DEFAULT(0, "默认", 0, 2048, 50, 0, 1),
+	STARTED(1, "入门", 30, 10240, 50, 0, 2),
+	ADVANCED(2, "进阶", 50, 51200, 100, 0, 3),
+	PROFESSIONAL(3, "专业", 150, 102400, 999999, 0, 3);
 
 	/**
 	 * 数字越大越优先
@@ -34,14 +34,16 @@ public enum Group {
 	 * 优惠百分比
 	 */
 	final float discount;
+	final int maxShareMode;
 
-	Group(int priority, String name, float price, float storage, float restrictions, float discount) {
+	Group(int priority, String name, float price, float storage, float restrictions, float discount, int maxShareMode) {
 		this.priority = priority;
 		this.name = name;
 		this.price = price;
 		this.storage = storage;
 		this.restrictions = restrictions;
 		this.discount = discount;
+		this.maxShareMode = maxShareMode;
 	}
 
 	public static long toByte(float mb) {

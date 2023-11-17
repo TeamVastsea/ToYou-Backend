@@ -159,6 +159,10 @@ public class PictureController {
 	public ResponseEntity<Share> sharePicture(SharePictureRequest sharePictureRequest, @PathVariable("id") Long id, HttpServletRequest request) {
 		User user = userService.getTokenLogin(request);
 		long uid = user.getUid();
+		Group group = permissionService.getMaxPriorityGroup(uid);
+		if (group.getMaxShareMode() < sharePictureRequest.getShareMode()) {
+			throw new BusinessException(StatusCode.FORBIDDEN, "分享等级过大");
+		}
 		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
 		if (userPicture == null) {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
