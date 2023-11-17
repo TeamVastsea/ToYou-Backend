@@ -14,4 +14,5 @@ public class PicturePreviewRequest implements Serializable {
 
 	private Long id;
 	private Integer shareMode = 3;
+	private String token;
 }
