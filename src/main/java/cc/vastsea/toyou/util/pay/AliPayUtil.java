@@ -21,23 +21,26 @@ public class AliPayUtil {
 
 	private final String privateKey;
 
-	private final String publicKey;
+	private String publicKey = null;
 
 	public AliPayUtil(String domain, String appId) {
 		this.domain = domain;
 		this.appId = appId;
+		boolean certificate = true;
 		// 读取私钥和公钥
 		// 私钥路径"./foo/alipay/private.txt"
 		// 公钥路径"./foo/alipay/public.txt"
 		// 从文件中读取字符串，赋值给privateKey和publicKey
 		try {
-			this.privateKey = new String(Files.readAllBytes(Paths.get("./foo/alipay/privateKey.txt")));
-			this.publicKey = new String(Files.readAllBytes(Paths.get("./foo/alipay/publicKey.txt")));
+			this.privateKey = new String(Files.readAllBytes(Paths.get("./profile/alipay/privateKey.txt")));
+			if (!certificate) {
+				this.publicKey = new String(Files.readAllBytes(Paths.get("./profile/alipay/publicKey.txt")));
+			}
 		} catch (IOException e) {
 			log.error("读取支付宝公钥和私钥失败", e);
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "读取支付宝公钥和私钥失败");
 		}
-		Factory.setOptions(getOptions(true));
+		Factory.setOptions(getOptions(certificate));
 	}
 
 	public static TradeStatus getTradeStatus(String tradeStatus) {
@@ -62,15 +65,15 @@ public class AliPayUtil {
 
 		if (certificate) {
 			//注：证书文件路径支持设置为文件系统中的路径或CLASS_PATH中的路径，优先从文件系统中加载，加载失败后会继续尝试从CLASS_PATH中加载
-			config.merchantCertPath = "./foo/alipay/appCertPublicKey.crt";
-			config.alipayCertPath = "./foo/alipay/alipayCertPublicKey.crt";
-			config.alipayRootCertPath = "./foo/alipay/alipayRootCert.crt";
+			config.merchantCertPath = "./profile/alipay/appCertPublicKey.crt";
+			config.alipayCertPath = "./profile/alipay/alipayCertPublicKey.crt";
+			config.alipayRootCertPath = "./profile/alipay/alipayRootCert.crt";
 		} else {
 			//注：如果采用非证书模式，则无需赋值上面的三个证书路径，改为赋值如下的支付宝公钥字符串即可
 			config.alipayPublicKey = publicKey;
 		}
 
-		config.notifyUrl = domain + "/pay/aliPay";
+		config.notifyUrl = domain + "/pay/alipay";
 
 		return config;
 	}

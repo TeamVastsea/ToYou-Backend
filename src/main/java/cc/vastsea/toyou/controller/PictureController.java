@@ -1,4 +1,4 @@
-package cc.vastsea.toyou.controler;
+package cc.vastsea.toyou.controller;
 
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
@@ -102,6 +102,7 @@ public class PictureController {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
 		}
 		userPictureService.removeById(id);
+		userPictureService.invalidate(id);
 		return new ResponseEntity<>("success", null, StatusCode.OK);
 	}
 

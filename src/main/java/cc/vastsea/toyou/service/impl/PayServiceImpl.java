@@ -64,49 +64,6 @@ public class PayServiceImpl implements PayService {
 	}
 
 	@Override
-	public String alipayTest() {
-		init();
-		String tradeNo = PaymentUtil.generateTradeNumber();
-		String returnUrl = aliPayUtil.getDomain() + "/pay/aliPay";
-		try {
-			AlipayTradePagePayResponse response = Factory.Payment.Page().pay("test", tradeNo, "0.01", returnUrl);
-			// AlipayTradePrecreateResponse response = Factory.Payment.FaceToFace().preCreate("test", tradeNo, "0.01");
-			// 3. 处理响应或异常
-			if (ResponseChecker.success(response)) {
-				// return response.getQrCode();
-				return response.getBody();
-			}
-			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "调用失败");
-		} catch (Exception e) {
-			log.error("调用遭遇异常，原因：" + e.getMessage());
-			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "调用遭遇异常");
-		}
-	}
-
-	@Override
-	public String wechatTest() {
-		init();
-		String tradeNo = PaymentUtil.generateTradeNumber();
-		// 构建service
-		NativePayService service = new NativePayService.Builder().config(wechatPayUtil.getConfig()).build();
-		// request.setXxx(val)设置所需参数，具体参数可见Request定义
-		PrepayRequest request = new PrepayRequest();
-		Amount amount = new Amount();
-		amount.setTotal(1);
-		request.setAmount(amount);
-		request.setAppid(wechatAppId);
-		request.setMchid(wechatMerchantId);
-		request.setDescription("测试商品标题");
-		String notifyUrl = domain + "/pay/wechat";
-		request.setNotifyUrl(notifyUrl);
-		request.setOutTradeNo(tradeNo);
-		// 调用下单方法，得到应答
-		PrepayResponse response = service.prepay(request);
-		// 使用微信扫描 code_url 对应的二维码，即可体验Native支付
-		return response.getCodeUrl();
-	}
-
-	@Override
 	public AliPayUtil getAliPayUtil() {
 		init();
 		return aliPayUtil;
@@ -129,7 +86,8 @@ public class PayServiceImpl implements PayService {
 		String subject = "图邮" + group.getName() + " " + month + "个月";
 		order.setSubject(subject);
 		order.setPayPlatform(payPlatform.getCode());
-		int money = group.getPriceByMonth(month);
+		// int money = group.getPriceByMonth(month);
+		int money = 1;
 		String iMoney = PaymentUtil.changeF2Y(money);
 		order.setTotalAmount(money);
 		// 插入记录并判断是否插入成功

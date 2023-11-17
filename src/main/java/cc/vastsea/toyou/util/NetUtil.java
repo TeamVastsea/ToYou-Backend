@@ -48,4 +48,25 @@ public class NetUtil {
 		}
 		return ip;
 	}
+
+	/**
+	 * 判断是否为移动端设备
+	 *
+	 * @param request 请求
+	 * @return 是否为移动端设备, true为移动端设备, false为PC端设备
+	 */
+	public static boolean isMobileDevice(HttpServletRequest request) {
+		String requestHeader = request.getHeader("user-agent");
+		String[] deviceArray = {"android", "windows phone"};
+		if (requestHeader == null) {
+			return false;
+		}
+		requestHeader = requestHeader.toLowerCase();
+		for (String device : deviceArray) {
+			if (requestHeader.contains(device)) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

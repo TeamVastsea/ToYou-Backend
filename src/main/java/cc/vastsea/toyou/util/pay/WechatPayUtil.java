@@ -31,7 +31,7 @@ public class WechatPayUtil {
 		this.merchantSerialNumber = merchantSerialNumber;
 		this.apiV2Key = apiV2Key;
 		this.apiV3Key = apiV3Key;
-		String privateKeyPath = "./foo/wechat/apiclient_key.pem";
+		String privateKeyPath = "./profile/wechat/apiclient_key.pem";
 		// 使用自动更新平台证书的RSA配置
 		// 一个商户号只能初始化一个配置，否则会因为重复的下载任务报错
 		this.config = new RSAAutoCertificateConfig.Builder()
