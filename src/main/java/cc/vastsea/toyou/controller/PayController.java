@@ -1,4 +1,4 @@
-package cc.vastsea.toyou.controler;
+package cc.vastsea.toyou.controller;
 
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
@@ -10,6 +10,7 @@ import cc.vastsea.toyou.model.enums.pay.TradeStatus;
 import cc.vastsea.toyou.service.OrderService;
 import cc.vastsea.toyou.service.PayService;
 import cc.vastsea.toyou.service.UserService;
+import cc.vastsea.toyou.util.NetUtil;
 import cc.vastsea.toyou.util.pay.AliPayUtil;
 import cc.vastsea.toyou.util.pay.PaymentUtil;
 import cc.vastsea.toyou.util.pay.WechatPayUtil;
@@ -22,7 +23,6 @@ import com.wechat.pay.java.service.payments.model.Transaction;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -44,24 +44,7 @@ public class PayController {
 	@Resource
 	private OrderService orderService;
 
-	@NotNull
-	private static Map<String, String> getParamsMap(HttpServletRequest request) {
-		Map<String, String> params = new HashMap<>();
-		Map<String, String[]> requestParams = request.getParameterMap();
-		for (String name : requestParams.keySet()) {
-			String[] values = requestParams.get(name);
-			String valueStr = "";
-			for (int i = 0; i < values.length; i++) {
-				valueStr = (i == values.length - 1) ? valueStr + values[i]
-						: valueStr + values[i] + ",";
-			}
-			valueStr = new String(valueStr.getBytes(StandardCharsets.ISO_8859_1), StandardCharsets.UTF_8);
-			params.put(name, valueStr);
-		}
-		return params;
-	}
-
-	@GetMapping("/alipay/test")
+	/*@GetMapping("/alipay/test")
 	public String alipayTest() {
 		return payService.alipayTest();
 	}
@@ -69,6 +52,13 @@ public class PayController {
 	@GetMapping("/wechat/test")
 	public String wechatTest() {
 		return payService.wechatTest();
+	}*/
+
+	@GetMapping("/test")
+	public Boolean test(String no, HttpServletRequest request) {
+		log.error(no);
+		payService.alipayRefund(no, "0.01");
+		return NetUtil.isMobileDevice(request);
 	}
 
 	@GetMapping("")
@@ -92,9 +82,30 @@ public class PayController {
 		return new ResponseEntity<>(body, null, StatusCode.OK);
 	}
 
-	@PostMapping("/aliPay")
+	@PostMapping("/alipay")
 	public ResponseEntity<String> aliPayCallback(HttpServletRequest request) {
-		Map<String, String> params = getParamsMap(request);
+		// 得到并遍历回调传来的参数
+		Map<String, String[]> requestParams = request.getParameterMap();
+		Map<String, String> params = new HashMap<>();
+		// 将前台的参数转换为"xxx"->"aaa,bbb"的格式存入params中,实际上回调传来的参数每个key都只对应一个value
+		for (Map.Entry<String, String[]> entry : requestParams.entrySet()) {
+			String key = entry.getKey();
+			String[] values = entry.getValue();
+			StringBuilder valStr = new StringBuilder();
+			for (int i = 0; i < values.length; i++) {
+				if (i != values.length - 1) {
+					valStr.append(values[i]).append(",");
+				} else {
+					valStr.append(values[i]);
+				}
+			}
+			params.put(key, valStr.toString());
+		}
+		// 日志打印回调信息，包括签名，支付状态，所有参数
+		log.info("alipay_callback, sign:{}, trade_status:{}, params:{}", params.get("sign"), params.get("trade_status"), params);
+
+		// 需要除去sign、sign_type两个参数，而sign已经在#rsaCheckV2方法中除去了
+		params.remove("sign_type");
 		// 验签
 		try {
 			boolean signVerified = Factory.Payment.Common().verifyNotify(params);

@@ -12,6 +12,7 @@ import cc.vastsea.toyou.util.pay.PaymentUtil;
 import cc.vastsea.toyou.util.pay.WechatPayUtil;
 import com.alipay.easysdk.factory.Factory;
 import com.alipay.easysdk.kernel.util.ResponseChecker;
+import com.alipay.easysdk.payment.common.Client;
 import com.alipay.easysdk.payment.facetoface.models.AlipayTradePrecreateResponse;
 import com.alipay.easysdk.payment.page.models.AlipayTradePagePayResponse;
 import com.wechat.pay.java.service.payments.nativepay.NativePayService;
@@ -129,7 +130,8 @@ public class PayServiceImpl implements PayService {
 		String subject = "图邮" + group.getName() + " " + month + "个月";
 		order.setSubject(subject);
 		order.setPayPlatform(payPlatform.getCode());
-		int money = group.getPriceByMonth(month);
+		// int money = group.getPriceByMonth(month);
+		int money = 1;
 		String iMoney = PaymentUtil.changeF2Y(money);
 		order.setTotalAmount(money);
 		// 插入记录并判断是否插入成功
@@ -172,6 +174,18 @@ public class PayServiceImpl implements PayService {
 			}
 		} catch (Exception e) {
 			log.error("调用遭遇异常，原因：" + e.getMessage());
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "调用遭遇异常");
+		}
+	}
+
+	@Override
+	public void alipayRefund(String outTradeNo, String amount) {
+		init();
+		try {
+			Client client = Factory.Payment.Common();
+			client.refund(outTradeNo, amount);
+		} catch (Exception e) {
+			e.printStackTrace();
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "调用遭遇异常");
 		}
 	}

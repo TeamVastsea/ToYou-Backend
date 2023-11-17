@@ -1,4 +1,4 @@
-package cc.vastsea.toyou.controler;
+package cc.vastsea.toyou.controller;
 
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;

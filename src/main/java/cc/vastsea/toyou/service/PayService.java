@@ -16,4 +16,6 @@ public interface PayService {
 	WechatPayUtil getWechatPayUtil();
 
 	String createOrder(long uid, Group group, int month, PayPlatform payPlatform, String returnUrl, HttpServletRequest request);
+
+	void alipayRefund(String outTradeNo, String amount);
 }
