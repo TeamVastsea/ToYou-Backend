@@ -116,4 +116,9 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "更新失败，数据库错误");
 		}
 	}
+
+	@Override
+	public void invalidate(long uid) {
+		userPictures.invalidate(uid);
+	}
 }

@@ -10,7 +10,6 @@ import cc.vastsea.toyou.model.enums.pay.TradeStatus;
 import cc.vastsea.toyou.service.OrderService;
 import cc.vastsea.toyou.service.PayService;
 import cc.vastsea.toyou.service.UserService;
-import cc.vastsea.toyou.util.NetUtil;
 import cc.vastsea.toyou.util.pay.AliPayUtil;
 import cc.vastsea.toyou.util.pay.PaymentUtil;
 import cc.vastsea.toyou.util.pay.WechatPayUtil;
@@ -43,23 +42,6 @@ public class PayController {
 	private UserService userService;
 	@Resource
 	private OrderService orderService;
-
-	/*@GetMapping("/alipay/test")
-	public String alipayTest() {
-		return payService.alipayTest();
-	}
-
-	@GetMapping("/wechat/test")
-	public String wechatTest() {
-		return payService.wechatTest();
-	}*/
-
-	@GetMapping("/test")
-	public Boolean test(String no, HttpServletRequest request) {
-		log.error(no);
-		payService.alipayRefund(no, "0.01");
-		return NetUtil.isMobileDevice(request);
-	}
 
 	@GetMapping("")
 	public ResponseEntity<String> createOrder(OrderCreationRequest orderCreationRequest, HttpServletRequest request) {

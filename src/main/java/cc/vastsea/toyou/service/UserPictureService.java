@@ -19,4 +19,6 @@ public interface UserPictureService extends IService<UserPicture> {
 	UserPicture getUserPicture(long uid, Long id);
 
 	void setDownloads(long id, long downloads);
+
+	void invalidate(long uid);
 }

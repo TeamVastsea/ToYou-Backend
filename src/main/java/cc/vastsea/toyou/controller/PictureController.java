@@ -102,6 +102,7 @@ public class PictureController {
 			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
 		}
 		userPictureService.removeById(id);
+		userPictureService.invalidate(id);
 		return new ResponseEntity<>("success", null, StatusCode.OK);
 	}
 
