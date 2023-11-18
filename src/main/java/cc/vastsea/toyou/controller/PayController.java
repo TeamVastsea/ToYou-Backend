@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -119,7 +120,7 @@ public class PayController {
 	}
 
 	@PostMapping("/wechat")
-	public ResponseEntity<String> wechatCallback(String body, HttpServletRequest request) {
+	public ResponseEntity<String> wechatCallback(@RequestBody String body, HttpServletRequest request) {
 		/*
 		  HTTP 请求体 body。切记使用原始报文，不要用 JSON 对象序列化后的字符串，避免验签的 body 和原文不一致。
 		  HTTP 头 Wechatpay-Signature。应答的微信支付签名。
