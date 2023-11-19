@@ -86,8 +86,8 @@ public class PayServiceImpl implements PayService {
 		String subject = "图邮" + group.getName() + " " + month + "个月";
 		order.setSubject(subject);
 		order.setPayPlatform(payPlatform.getCode());
-		// int money = group.getPriceByMonth(month);
-		int money = 1;
+		int money = group.getPriceByMonth(month);
+		// int money = 1;
 		String iMoney = PaymentUtil.changeF2Y(money);
 		order.setTotalAmount(money);
 		// 插入记录并判断是否插入成功
