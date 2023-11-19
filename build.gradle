@@ -6,7 +6,7 @@ plugins {
 }
 
 group = 'cc.vastsea'
-version = '0.0.1-SNAPSHOT'
+version = '0.0.1-RC'
 
 java {
     sourceCompatibility = '17'
