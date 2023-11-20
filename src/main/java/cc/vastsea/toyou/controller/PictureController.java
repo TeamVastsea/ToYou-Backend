@@ -30,13 +30,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -172,8 +166,23 @@ public class PictureController {
 		return new ResponseEntity<>(share, null, StatusCode.OK);
 	}
 
+	@PatchMapping("/{id}")
+	public ResponseEntity<String> changePictureName(@RequestParam("name") String name, @PathVariable("id") Long id, HttpServletRequest request) {
+		User user = userService.getTokenLogin(request);
+		if (name.isEmpty()) {
+			throw new BusinessException(StatusCode.BAD_REQUEST, "图片名未空");
+		}
+		long uid = user.getUid();
+		UserPicture userPicture = userPictureService.getUserPicture(uid, id);
+		if (userPicture == null) {
+			throw new BusinessException(StatusCode.FORBIDDEN, "无权操作");
+		}
+		userPictureService.changePictureName(id, name);
+		return new ResponseEntity<>("", null, StatusCode.OK);
+	}
+
 	@GetMapping("/share/{uuid}")
-	public ResponseEntity<String> downloadPicture(String password, @PathVariable("uuid") String uuid, HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<String> downloadPicture(String password, @PathVariable("uuid") String uuid, HttpServletResponse response) {
 		Share share = shareService.getShare(uuid);
 		if (!StringUtils.isAnyBlank(share.getPassword())) {
 			if (!share.getPassword().equals(password)) {
@@ -224,8 +233,8 @@ public class PictureController {
 	}
 
 	@GetMapping("/preview")
-	public ResponseEntity<InputStreamResource> previewPicture(PicturePreviewRequest picturePreviewRequest, HttpServletRequest request, HttpServletResponse response) {
-		User user = null;
+	public ResponseEntity<InputStreamResource> previewPicture(PicturePreviewRequest picturePreviewRequest, HttpServletRequest request) {
+		User user;
 		if (picturePreviewRequest.getToken() != null) {
 			user = userService.tokenLogin(UUID.fromString(picturePreviewRequest.getToken()));
 		} else {
@@ -243,7 +252,6 @@ public class PictureController {
 			throw new BusinessException(StatusCode.FORBIDDEN, "未找到该图片");
 		}
 		String pid = userPicture.getPid();
-		String fileName = userPicture.getFileName();
 		ShareMode shareMode = ShareMode.of(picturePreviewRequest.getShareMode());
 		Picture picture = pictureService.getPicture(pid);
 		File pictureFile;

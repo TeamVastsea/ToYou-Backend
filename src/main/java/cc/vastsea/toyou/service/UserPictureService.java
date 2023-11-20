@@ -20,5 +20,7 @@ public interface UserPictureService extends IService<UserPicture> {
 
 	void setDownloads(long id, long downloads);
 
+	void changePictureName(long id, String name);
+
 	void invalidate(long uid);
 }

@@ -118,6 +118,20 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 	}
 
 	@Override
+	public void changePictureName(long id, String name) {
+		UserPicture userPicture = userPictureMapper.selectById(id);
+		if (userPicture == null) {
+			throw new BusinessException(StatusCode.NOT_FOUND, "图片不存在");
+		}
+		userPicture.setFileName(name);
+		boolean result = this.updateById(userPicture);
+		if (!result) {
+			log.error("更改图片名称失败，userPicture:{}", userPicture);
+			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "更改失败，数据库错误");
+		}
+	}
+
+	@Override
 	public void invalidate(long uid) {
 		userPictures.invalidate(uid);
 	}
