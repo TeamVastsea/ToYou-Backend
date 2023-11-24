@@ -161,8 +161,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		if (!userCreateRequest.getUsername().matches("^[a-zA-Z0-9_-]{4,16}$")) {
 			throw new BusinessException(StatusCode.BAD_REQUEST, "用户名格式错误");
 		}
-		// 检查密码不过分简单。大小写字母、数字、特殊符号中至少包含两个，且长度大于6小于16。
-		if (!userCreateRequest.getPassword().matches("^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\\W_]+$)(?![a-z0-9]+$)(?![a-z\\W_]+$)(?![0-9\\W_]+$)[a-zA-Z0-9\\W_]{6,16}$")) {
+		// 检查密码不过分简单。大小写字母、数字、特殊符号中至少包含两个，且长度大于8小于30。
+		if (!userCreateRequest.getPassword().matches("^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\\W_]+$)(?![a-z0-9]+$)(?![a-z\\W_]+$)(?![0-9\\W_]+$)[a-zA-Z0-9\\W_]{8,30}$")) {
 			throw new BusinessException(StatusCode.BAD_REQUEST, "密码格式错误");
 		}
 		user.setUsername(userCreateRequest.getUsername());
