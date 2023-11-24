@@ -12,7 +12,7 @@ public class UserLoginRequest implements Serializable {
 	@TableField(exist = false)
 	private static final long serialVersionUID = 1L;
 
-	private String email;
+	private String account;
 	private String password;
 	private Boolean extended;
 }
