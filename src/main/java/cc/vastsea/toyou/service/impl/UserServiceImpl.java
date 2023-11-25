@@ -11,6 +11,7 @@ import cc.vastsea.toyou.model.vo.UserVO;
 import cc.vastsea.toyou.service.UserService;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import cc.vastsea.toyou.util.PasswordUtil;
+import cc.vastsea.toyou.util.StringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
@@ -20,7 +21,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -190,13 +190,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		if (checkDuplicatesEmail(rawEmail)) {
 			emailCodeGetResponse.setExist(true);
 		} else {
-			String codeChars = "123456789QWERTYUIOPASDFGHJKLZXCVBNM";
-			StringBuilder code = new StringBuilder();
-			Random random = new Random();
-			for (int i = 0; i < 6; i++) {
-				code.append(codeChars.charAt(random.nextInt(codeChars.length())));
-			}
-			String uppercaseCode = code.toString().toUpperCase();
+			String code = StringUtil.getRandomString(6);
+			String uppercaseCode = code.toUpperCase();
 
 			emailAuthCode.put(email, uppercaseCode);
 			emailCodeGetResponse.setExist(false);
