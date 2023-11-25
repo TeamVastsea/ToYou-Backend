@@ -35,9 +35,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 	private static final Cache<String, String> emailAuthCode = CaffeineFactory.newBuilder()
 			.expireAfterWrite(10, TimeUnit.MINUTES)
 			.build();
-	private static final Cache<String, String> phoneAuthCode = CaffeineFactory.newBuilder()
-			.expireAfterWrite(10, TimeUnit.MINUTES)
-			.build();
 	@Resource
 	private UserMapper userMapper;
 
@@ -142,11 +139,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			if (!phone.matches("^1[3-9]\\d{9}$")) {
 				throw new BusinessException(StatusCode.BAD_REQUEST, "手机号格式错误");
 			}
-			String code = phoneAuthCode.getIfPresent(phone);
+
+			AliyunSmsServiceImpl.CodeCache codeCache = AliyunSmsServiceImpl.phoneCache.getIfPresent(phone);
+			if (codeCache == null) {
+				throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
+			}
+			String code = codeCache.getCode();
 			if (StringUtils.isAnyBlank(code)) {
 				throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
 			}
-			assert code != null;
 			if (!code.equals(userCreateRequest.getCode())) {
 				throw new BusinessException(StatusCode.UNAUTHORIZED, "验证码错误");
 			}
@@ -154,7 +155,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 				throw new BusinessException(StatusCode.UNAUTHORIZED, "手机号已被注册");
 			}
 			user.setPhone(phone);
-			phoneAuthCode.invalidate(phone);
+			AliyunSmsServiceImpl.phoneCache.invalidate(phone);
 		}
 
 		// 检查用户名，特殊符号只能使用-和_，其它不能使用。并且检查字符串个数，大于4小于16

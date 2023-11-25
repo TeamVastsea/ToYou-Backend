@@ -13,6 +13,7 @@ import com.aliyuncs.profile.DefaultProfile;
 import com.github.benmanes.caffeine.cache.Cache;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -63,9 +64,7 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 		request.setTemplateCode(templateCode);
 		request.setTemplateParam(templateParam);
 
-		CodeCache cache = new CodeCache();
-		cache.setCode(templateParam);
-		cache.setTime(System.currentTimeMillis());
+		CodeCache cache = new CodeCache(templateCode, System.currentTimeMillis());
 		phoneCache.put(phoneNumber, cache);
 		try {
 			return client.getAcsResponse(request);
@@ -76,7 +75,9 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 
 	@Data
 	public static class CodeCache {
+		@NotNull
 		private String code;
-		private long time;
+		@NotNull
+		private Long time;
 	}
 }
