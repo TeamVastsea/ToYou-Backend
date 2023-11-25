@@ -25,6 +25,10 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 			.expireAfterWrite(10, TimeUnit.MINUTES)
 			.build();
 	/**
+	 * 短信签名名称，这是您在阿里云短信服务中创建的签名的名称。
+	 */
+	private final String signName = "图邮";
+	/**
 	 * 阿里云accessKeyId
 	 */
 	@Value("${sms.aliyun.access-key-id}")
@@ -39,11 +43,6 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 	 */
 	@Value("${sms.aliyun.template-code}")
 	private String templateCode;
-	/**
-	 * 短信签名名称，这是您在阿里云短信服务中创建的签名的名称。
-	 */
-	@Value("${sms.aliyun.sign-name}")
-	private String signName;
 
 	@Override
 	public SendSmsResponse sendSms(String phoneNumber, String templateParam) {

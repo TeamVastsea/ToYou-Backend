@@ -21,7 +21,7 @@ public class SmsController {
 	@GetMapping("/{phone}")
 	public ResponseEntity<String> sendSms(@PathVariable("phone") String phone) {
 		String code = NumberUtil.getRandomCode(6);
-		aliyunSmsService.sendSms(phone, code);
+		aliyunSmsService.sendSms(phone, "{\"code\":\"" + code + "\"}");
 		return new ResponseEntity<>("success", null, StatusCode.OK);
 	}
 }
