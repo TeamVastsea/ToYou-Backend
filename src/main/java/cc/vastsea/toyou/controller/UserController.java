@@ -1,17 +1,14 @@
 package cc.vastsea.toyou.controller;
 
 import cc.vastsea.toyou.common.StatusCode;
-import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
+import cc.vastsea.toyou.model.dto.CodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
 import cc.vastsea.toyou.model.dto.UserLoginRequest;
 import cc.vastsea.toyou.model.entity.Permission;
 import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.model.enums.Group;
 import cc.vastsea.toyou.model.vo.UserVO;
-import cc.vastsea.toyou.service.MailService;
-import cc.vastsea.toyou.service.PermissionService;
-import cc.vastsea.toyou.service.UserPictureService;
-import cc.vastsea.toyou.service.UserService;
+import cc.vastsea.toyou.service.*;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -35,10 +32,12 @@ public class UserController {
 	private PermissionService permissionService;
 	@Resource
 	private UserPictureService userPictureService;
+	@Resource
+	private AliyunSmsService aliyunSmsService;
 
 	@GetMapping("/code/email")
 	public ResponseEntity<String> getEmailCode(@RequestParam String email) {
-		EmailCodeGetResponse ecr = userService.getEmailCode(email);
+		CodeGetResponse ecr = userService.getCode(email);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
 		}
@@ -46,12 +45,19 @@ public class UserController {
 		return new ResponseEntity<>("{\"cd\": 60000}", null, StatusCode.OK);
 	}
 
+	@GetMapping("/code/phone")
+	public ResponseEntity<String> getPhoneCode(@RequestParam String phone) {
+		CodeGetResponse ecr = userService.getCode(phone);
+		if (ecr.getFrequent()) {
+			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
+		}
+		aliyunSmsService.sendSms(phone, ecr.getCode());
+		return new ResponseEntity<>("{\"cd\": 60000}", null, StatusCode.OK);
+	}
+
 	@GetMapping("/email/{email}")
 	public ResponseEntity<String> getEmail(@PathVariable("email") String email, HttpServletRequest request) {
-		EmailCodeGetResponse ecr = userService.getEmailCode(email);
-		if (ecr.getExist()) {
-			return new ResponseEntity<>("exists", null, StatusCode.OK);
-		}
+		CodeGetResponse ecr = userService.getCode(email);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
 		}

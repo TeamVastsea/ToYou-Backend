@@ -7,12 +7,11 @@ import java.io.Serial;
 import java.io.Serializable;
 
 @Data
-public class EmailCodeGetResponse implements Serializable {
+public class CodeGetResponse implements Serializable {
 	@Serial
 	@TableField(exist = false)
 	private static final long serialVersionUID = 1L;
 
-	private Boolean exist;
 	private Boolean frequent;
 	private String code;
 }

@@ -3,7 +3,7 @@ package cc.vastsea.toyou.service.impl;
 import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.UserMapper;
-import cc.vastsea.toyou.model.dto.EmailCodeGetResponse;
+import cc.vastsea.toyou.model.dto.CodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
 import cc.vastsea.toyou.model.dto.UserLoginRequest;
 import cc.vastsea.toyou.model.entity.User;
@@ -33,7 +33,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public static final Cache<UUID, Long> userLoginToken = CaffeineFactory.newBuilder()
             .expireAfterWrite(30, TimeUnit.DAYS)
             .build();
-    private static final Cache<String, String> emailAuthCode = CaffeineFactory.newBuilder()
+    private static final Cache<String, String> authCode = CaffeineFactory.newBuilder()
             .expireAfterWrite(10, TimeUnit.MINUTES)
             .build();
 
@@ -124,7 +124,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 		if (!StringUtils.isAnyBlank(email)) {
 			// 邮箱注册
 			String rawEmail = getRawEmail(email);
-			String code = emailAuthCode.getIfPresent(rawEmail);
+			String code = authCode.getIfPresent(rawEmail);
 			if (StringUtils.isAnyBlank(code)) {
 				throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
 			}
@@ -137,7 +137,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			}
 			user.setEmail(email);
 			user.setEmailRaw(rawEmail);
-			emailAuthCode.invalidate(rawEmail);
+			authCode.invalidate(rawEmail);
 		} else {
 			// 手机号注册
 			// 检查是否为中国大陆地区的手机号格式
@@ -189,28 +189,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public EmailCodeGetResponse getEmailCode(String email) {
-        String rawEmail = getRawEmail(email);
+    public CodeGetResponse getCode(String emailOrPhone) {
+        CodeGetResponse codeGetResponse = new CodeGetResponse();
 
-        EmailCodeGetResponse emailCodeGetResponse = new EmailCodeGetResponse();
-        if (checkDuplicates(rawEmail)) {
-            emailCodeGetResponse.setExist(true);
-            return emailCodeGetResponse;
-        }
-
-		if (checkCodeHistory(email)) {
-			emailCodeGetResponse.setFrequent(true);
-			return emailCodeGetResponse;
+		if (checkCodeHistory(emailOrPhone)) {
+			codeGetResponse.setFrequent(true);
+			return codeGetResponse;
 		}
 
-        StringBuilder code = new StringBuilder().getRandomString(6);
-        String uppercaseCode = code.toString().toUpperCase();
+        String code = StringUtil.getRandomString(6);
+        String uppercaseCode = code.toUpperCase();
 
-        emailAuthCode.put(email, uppercaseCode);
-        emailCodeGetResponse.setExist(false);
-        emailCodeGetResponse.setCode(uppercaseCode);
+        authCode.put(emailOrPhone, uppercaseCode);
+        putHistory(emailOrPhone);
+        codeGetResponse.setFrequent(false);
+        codeGetResponse.setCode(uppercaseCode);
 
-        return emailCodeGetResponse;
+        return codeGetResponse;
     }
 
     @Override
