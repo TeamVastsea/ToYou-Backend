@@ -19,12 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import static cc.vastsea.toyou.constant.UserConstant.*;
 
@@ -41,11 +36,24 @@ public class UserController {
 	@Resource
 	private UserPictureService userPictureService;
 
+	@GetMapping("/code/email")
+	public ResponseEntity<String> getEmailCode(@RequestParam String email) {
+		EmailCodeGetResponse ecr = userService.getEmailCode(email);
+		if (ecr.getFrequent()) {
+			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
+		}
+		mailService.verifyEmail(email, ecr.getCode());
+		return new ResponseEntity<>("{\"cd\": 60000}", null, StatusCode.OK);
+	}
+
 	@GetMapping("/email/{email}")
-	public ResponseEntity<String> getEmailCode(@PathVariable("email") String email, HttpServletRequest request) {
-		EmailCodeGetResponse ecr = userService.getEmailCode(email, request);
-		if (ecr.isExist()) {
+	public ResponseEntity<String> getEmail(@PathVariable("email") String email, HttpServletRequest request) {
+		EmailCodeGetResponse ecr = userService.getEmailCode(email);
+		if (ecr.getExist()) {
 			return new ResponseEntity<>("exists", null, StatusCode.OK);
+		}
+		if (ecr.getFrequent()) {
+			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
 		}
 		mailService.verifyEmail(email, ecr.getCode());
 		return new ResponseEntity<>("success", null, StatusCode.CREATED);

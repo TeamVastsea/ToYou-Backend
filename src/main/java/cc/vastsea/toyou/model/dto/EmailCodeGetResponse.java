@@ -12,6 +12,7 @@ public class EmailCodeGetResponse implements Serializable {
 	@TableField(exist = false)
 	private static final long serialVersionUID = 1L;
 
-	private boolean exist;
+	private Boolean exist;
+	private Boolean frequent;
 	private String code;
 }

@@ -19,7 +19,7 @@ public interface UserService extends IService<User> {
 
 	void deleteUser(Long uid, HttpServletRequest request);
 
-	EmailCodeGetResponse getEmailCode(String email, HttpServletRequest request);
+	EmailCodeGetResponse getEmailCode(String email);
 
 	User getUserByUid(Long uid, HttpServletRequest request);
 
