@@ -70,7 +70,7 @@ public class UserController {
 	@PostMapping("")
 	public ResponseEntity<String> createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
 		userService.createUser(userCreateRequest, request);
-		return new ResponseEntity<>(null, null, StatusCode.CREATED);
+		return new ResponseEntity<>("success", null, StatusCode.CREATED);
 	}
 
 	@GetMapping("")

@@ -10,12 +10,13 @@
         <result property="password" column="password" jdbcType="VARCHAR"/>
         <result property="email" column="email" jdbcType="VARCHAR"/>
         <result property="emailRaw" column="emailRaw" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
         <result property="createTime" column="createTime" jdbcType="TIMESTAMP"/>
         <result property="updateTime" column="updateTime" jdbcType="TIMESTAMP"/>
         <result property="available" column="available" jdbcType="BOOLEAN"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        uid,username,password,email,emailRaw,createTime,updateTime,available
+        uid,username,password,email,emailRaw,phone,createTime,updateTime,available
     </sql>
 </mapper>

@@ -45,6 +45,9 @@ dependencies {
     implementation 'net.coobird:thumbnailator:0.4.20'
     implementation 'com.alipay.sdk:alipay-easysdk:2.2.3'
     implementation 'com.github.wechatpay-apiv3:wechatpay-java:0.2.12'
+    implementation 'com.aliyun:aliyun-java-sdk-core:4.6.4'
+    implementation 'com.aliyun:aliyun-java-sdk-dysmsapi:2.2.1'
+    implementation 'io.github.karlatemp:unsafe-accessor:1.7.0'
 }
 
 /*tasks.named('test') {
