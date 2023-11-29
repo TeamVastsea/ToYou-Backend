@@ -30,4 +30,10 @@ public interface UserService extends IService<User> {
 	void userLogout(HttpServletRequest request);
 
 	User getTokenLogin(HttpServletRequest request);
+
+	boolean checkDuplicatesPhone(String phone);
+
+	boolean checkDuplicatesEmail(String emailRaw);
+
+	String getRawEmail(String email);
 }

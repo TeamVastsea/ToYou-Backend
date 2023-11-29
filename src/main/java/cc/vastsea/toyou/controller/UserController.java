@@ -18,6 +18,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.regex.Pattern;
+
 import static cc.vastsea.toyou.constant.UserConstant.*;
 
 @RestController
@@ -35,6 +37,8 @@ public class UserController {
 	@Resource
 	private AliyunSmsService aliyunSmsService;
 
+	private static final Pattern numberPattern = Pattern.compile("[0-9]*");
+
 	@GetMapping("/code/email")
 	public ResponseEntity<String> getEmailCode(@RequestParam String email) {
 		CodeGetResponse ecr = userService.getCode(email);
@@ -47,22 +51,37 @@ public class UserController {
 
 	@GetMapping("/code/phone")
 	public ResponseEntity<String> getPhoneCode(@RequestParam String phone) {
+		if (phone.length() != 11 || !numberPattern.matcher(phone).matches()) {
+			return new ResponseEntity<>("not a phone number", null, StatusCode.BAD_REQUEST);
+		}
 		CodeGetResponse ecr = userService.getCode(phone);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
 		}
 		aliyunSmsService.sendSms(phone, ecr.getCode());
+		log.warn(ecr.getCode());
 		return new ResponseEntity<>("{\"cd\": 60000}", null, StatusCode.OK);
 	}
 
 	@GetMapping("/email/{email}")
-	public ResponseEntity<String> getEmail(@PathVariable("email") String email, HttpServletRequest request) {
-		CodeGetResponse ecr = userService.getCode(email);
-		if (ecr.getFrequent()) {
-			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
+	public ResponseEntity<String> checkEmail(@PathVariable("email") String email) {
+		String rawEmail = userService.getRawEmail(email);
+		if (userService.checkDuplicatesEmail(rawEmail)) {
+			return new ResponseEntity<>("true", null, StatusCode.OK);
 		}
-		mailService.verifyEmail(email, ecr.getCode());
-		return new ResponseEntity<>("success", null, StatusCode.CREATED);
+		return new ResponseEntity<>("false", null, StatusCode.OK);
+	}
+
+	@GetMapping("/phone/{phone}")
+	public ResponseEntity<String> checkPhone(@PathVariable("phone") String phone) {
+		if (phone.length() != 11 || !numberPattern.matcher(phone).matches()) {
+			return new ResponseEntity<>("not a phone", null, StatusCode.BAD_REQUEST);
+		}
+
+		if (userService.checkDuplicatesPhone(phone)) {
+			return new ResponseEntity<>("true", null, StatusCode.OK);
+		}
+		return new ResponseEntity<>("false", null, StatusCode.OK);
 	}
 
 	@GetMapping("/{uid}")
