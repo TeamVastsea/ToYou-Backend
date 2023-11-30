@@ -41,7 +41,7 @@ public class UserController {
 
 	@GetMapping("/code/email")
 	public ResponseEntity<String> getEmailCode(@RequestParam String email) {
-		CodeGetResponse ecr = userService.getCode(email);
+		CodeGetResponse ecr = userService.getCode(email, false);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
 		}
@@ -54,11 +54,11 @@ public class UserController {
 		if (phone.length() != 11 || !numberPattern.matcher(phone).matches()) {
 			return new ResponseEntity<>("not a phone number", null, StatusCode.BAD_REQUEST);
 		}
-		CodeGetResponse ecr = userService.getCode(phone);
+		CodeGetResponse ecr = userService.getCode(phone, false);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
 		}
-		aliyunSmsService.sendSms(phone, ecr.getCode());
+		aliyunSmsService.sendSms(phone, "{\"code\":\"" + ecr.getCode() + "\"}");
 		log.warn(ecr.getCode());
 		return new ResponseEntity<>("{\"cd\": 60000}", null, StatusCode.OK);
 	}

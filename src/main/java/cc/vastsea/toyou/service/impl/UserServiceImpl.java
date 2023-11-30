@@ -189,7 +189,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public CodeGetResponse getCode(String emailOrPhone) {
+    public CodeGetResponse getCode(String emailOrPhone, Boolean onlyNum) {
         CodeGetResponse codeGetResponse = new CodeGetResponse();
 
 		if (checkCodeHistory(emailOrPhone)) {
@@ -197,13 +197,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			return codeGetResponse;
 		}
 
-        String code = StringUtil.getRandomString(6);
-        String uppercaseCode = code.toUpperCase();
+		String code;
+		if (!onlyNum) {
+			String lowercaseCode = StringUtil.getRandomString(6);
+			code = lowercaseCode.toUpperCase();
+		} else {
+			Random rand = new Random();
+			int codeInt = rand.nextInt(1000000 - 100000) + 100000;
+			code = String.valueOf(codeInt);
+		}
 
-        authCode.put(emailOrPhone, uppercaseCode);
+        authCode.put(emailOrPhone, code);
         putHistory(emailOrPhone);
         codeGetResponse.setFrequent(false);
-        codeGetResponse.setCode(uppercaseCode);
+        codeGetResponse.setCode(code);
 
         return codeGetResponse;
     }
