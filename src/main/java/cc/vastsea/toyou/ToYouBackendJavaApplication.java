@@ -7,6 +7,8 @@ import org.springframework.cache.annotation.EnableCaching;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
+import java.util.Random;
+
 @SpringBootApplication
 @MapperScan("cc.vastsea.toyou.mapper")
 @EnableScheduling
