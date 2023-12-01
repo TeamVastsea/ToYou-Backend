@@ -52,7 +52,7 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 			long time = codeCache.getTime();
 			// 如果距离上次发送时间小于60秒，则不发送
 			if (System.currentTimeMillis() - time < 60 * 1000) {
-				throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "短信发送过于频繁");
+				throw new BusinessException(StatusCode.TOO_MANY_REQUESTS, "短信发送过于频繁");
 			}
 		}
 		DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou", accessKeyId, accessKeySecret);
@@ -69,6 +69,7 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 		try {
 			return client.getAcsResponse(request);
 		} catch (ClientException e) {
+			log.error("Cannot send sms: " + e.getErrMsg());
 			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "短信发送失败");
 		}
 	}
