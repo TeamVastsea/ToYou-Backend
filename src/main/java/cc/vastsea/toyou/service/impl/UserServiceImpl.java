@@ -10,6 +10,7 @@ import cc.vastsea.toyou.model.entity.User;
 import cc.vastsea.toyou.model.vo.UserVO;
 import cc.vastsea.toyou.service.UserService;
 import cc.vastsea.toyou.util.CaffeineFactory;
+import cc.vastsea.toyou.util.NumberUtil;
 import cc.vastsea.toyou.util.PasswordUtil;
 import cc.vastsea.toyou.util.StringUtil;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -202,9 +203,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 			String lowercaseCode = StringUtil.getRandomString(6);
 			code = lowercaseCode.toUpperCase();
 		} else {
-			Random rand = new Random();
-			int codeInt = rand.nextInt(1000000 - 100000) + 100000;
-			code = String.valueOf(codeInt);
+			code = NumberUtil.getRandomCode(6);
 		}
 
         authCode.put(emailOrPhone, code);
