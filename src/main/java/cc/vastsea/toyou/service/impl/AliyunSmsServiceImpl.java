@@ -22,9 +22,6 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class AliyunSmsServiceImpl implements AliyunSmsService {
-	public static final Cache<String, CodeCache> phoneCache = CaffeineFactory.newBuilder()
-			.expireAfterWrite(10, TimeUnit.MINUTES)
-			.build();
 	/**
 	 * 短信签名名称，这是您在阿里云短信服务中创建的签名的名称。
 	 */
@@ -47,14 +44,6 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 
 	@Override
 	public SendSmsResponse sendSms(String phoneNumber, String templateParam) {
-		CodeCache codeCache = phoneCache.getIfPresent(phoneNumber);
-		if (codeCache != null) {
-			long time = codeCache.getTime();
-			// 如果距离上次发送时间小于60秒，则不发送
-			if (System.currentTimeMillis() - time < 60 * 1000) {
-				throw new BusinessException(StatusCode.TOO_MANY_REQUESTS, "短信发送过于频繁");
-			}
-		}
 		DefaultProfile profile = DefaultProfile.getProfile("cn-hangzhou", accessKeyId, accessKeySecret);
 		IAcsClient client = new DefaultAcsClient(profile);
 
@@ -64,8 +53,6 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 		request.setTemplateCode(templateCode);
 		request.setTemplateParam(templateParam);
 
-		CodeCache cache = new CodeCache(templateCode, System.currentTimeMillis());
-		phoneCache.put(phoneNumber, cache);
 		try {
 			return client.getAcsResponse(request);
 		} catch (ClientException e) {

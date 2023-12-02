@@ -44,46 +44,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private UserMapper userMapper;
 
-	@Override
-	public UserVO userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
-		User user;
-		try {
-			user = getLoginUser(request);
-		} catch (Throwable e) {
-			String tokenString = request.getHeader(USER_TOKEN_HEADER);
-			if (tokenString != null) {//token
-				UUID token = UUID.fromString(tokenString);
-				user = tokenLogin(token);
-			} else {
-				String account = userLoginRequest.getAccount();
-				String password = userLoginRequest.getPassword();
-				// 判断是否是邮箱登录
-				if (account.matches("^[a-zA-Z0-9._+-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$")) {
-					// 检查邮箱是否存在
-					String rawEmail = getRawEmail(account);
-					QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-					queryWrapper.eq("emailRaw", rawEmail);
-					user = userMapper.selectOne(queryWrapper);
-					if (user == null) {
-						throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱不存在");
-					}
-				} else {
-					// 手机号登录
-					QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-					queryWrapper.eq("phone", account);
-					user = userMapper.selectOne(queryWrapper);
-					if (user == null) {
-						throw new BusinessException(StatusCode.UNAUTHORIZED, "手机号不存在");
-					}
-				}
-				// 检查密码
-				if (!PasswordUtil.checkPassword(password, user.getPassword())) {
-					throw new BusinessException(StatusCode.UNAUTHORIZED, "密码错误");
-				}
-			}
-		}
-		//登录成功
-		request.getSession().setAttribute(USER_LOGIN_STATE, user);
+    @Override
+    public UserVO userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
+        User user;
+        try {
+            user = getLoginUser(request);
+        } catch (Throwable e) {
+            String tokenString = request.getHeader(USER_TOKEN_HEADER);
+            if (tokenString != null) {//token
+                UUID token = UUID.fromString(tokenString);
+                user = tokenLogin(token);
+            } else {
+                String account = userLoginRequest.getAccount();
+                String password = userLoginRequest.getPassword();
+                // 判断是否是邮箱登录
+                if (account.matches("^[a-zA-Z0-9._+-]+@[a-zA-Z0-9_-]+(\\.[a-zA-Z0-9_-]+)+$")) {
+                    // 检查邮箱是否存在
+                    String rawEmail = getRawEmail(account);
+                    QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("emailRaw", rawEmail);
+                    user = userMapper.selectOne(queryWrapper);
+                    if (user == null) {
+                        throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱不存在");
+                    }
+                } else {
+                    // 手机号登录
+                    QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+                    queryWrapper.eq("phone", account);
+                    user = userMapper.selectOne(queryWrapper);
+                    if (user == null) {
+                        throw new BusinessException(StatusCode.UNAUTHORIZED, "手机号不存在");
+                    }
+                }
+                // 检查密码
+                if (!PasswordUtil.checkPassword(password, user.getPassword())) {
+                    throw new BusinessException(StatusCode.UNAUTHORIZED, "密码错误");
+                }
+            }
+        }
+        //登录成功
+        request.getSession().setAttribute(USER_LOGIN_STATE, user);
 
         return user.toUserVO();
     }
@@ -112,73 +112,49 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return currentUser;
     }
 
-	@Override
-	public void createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
-		// 判断email和phone是否都为null。
-		String email = userCreateRequest.getEmail();
-		String phone = userCreateRequest.getPhone();
-		// 邮箱和手机号不能同时为空
-		if (StringUtils.isAllBlank(email, phone)) {
-			throw new BusinessException(StatusCode.BAD_REQUEST, "邮箱和手机号不能同时为空");
-		}
-		User user = new User();
-		if (!StringUtils.isAnyBlank(email)) {
-			// 邮箱注册
-			String rawEmail = getRawEmail(email);
-			String code = authCode.getIfPresent(rawEmail);
-			if (StringUtils.isAnyBlank(code)) {
-				throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
-			}
-			assert code != null;
-			if (!code.equals(userCreateRequest.getCode())) {
-				throw new BusinessException(StatusCode.UNAUTHORIZED, "验证码错误");
-			}
-			if (checkDuplicatesEmail(rawEmail)) {
-				throw new BusinessException(StatusCode.UNAUTHORIZED, "邮箱已被注册");
-			}
-			user.setEmail(email);
-			user.setEmailRaw(rawEmail);
-			authCode.invalidate(rawEmail);
-		} else {
-			// 手机号注册
-			// 检查是否为中国大陆地区的手机号格式
-			if (!phone.matches("^1[3-9]\\d{9}$")) {
-				throw new BusinessException(StatusCode.BAD_REQUEST, "手机号格式错误");
-			}
+    @Override
+    public void createUser(UserCreateRequest userCreateRequest, HttpServletRequest request) {
+        // 判断email和phone是否都为null。
+        String phone = userCreateRequest.getPhone();
+        // 邮箱和手机号不能同时为空
+        User user = new User();
+        // 手机号注册
+        // 检查是否为中国大陆地区的手机号格式
+        if (!phone.matches("^1[3-9]\\d{9}$")) {
+            throw new BusinessException(StatusCode.BAD_REQUEST, "手机号格式错误");
+        }
 
-			AliyunSmsServiceImpl.CodeCache codeCache = AliyunSmsServiceImpl.phoneCache.getIfPresent(phone);
-			if (codeCache == null) {
-				throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
-			}
-			String code = codeCache.getCode();
-			if (StringUtils.isAnyBlank(code)) {
-				throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
-			}
-			if (!code.equals(userCreateRequest.getCode())) {
-				throw new BusinessException(StatusCode.UNAUTHORIZED, "验证码错误");
-			}
-			if (checkDuplicatesPhone(phone)) {
-				throw new BusinessException(StatusCode.UNAUTHORIZED, "手机号已被注册");
-			}
-			user.setPhone(phone);
-			AliyunSmsServiceImpl.phoneCache.invalidate(phone);
-		}
+        //数据库中验证码
+        String cacheCode = authCode.getIfPresent(phone);
+        if (cacheCode == null) {
+            throw new BusinessException(StatusCode.BAD_REQUEST, "验证码错误");
+        }
+        if (!cacheCode.equals(userCreateRequest.getCode())) {
+            throw new BusinessException(StatusCode.UNAUTHORIZED, "验证码错误");
+        }
+        if (checkDuplicatesPhone(phone)) {
+            throw new BusinessException(StatusCode.UNAUTHORIZED, "手机号已被注册");
+        }
+        user.setPhone(phone);
+        authCode.invalidate(phone);
 
-		// 检查用户名，特殊符号只能使用-和_，其它不能使用。并且检查字符串个数，大于4小于16
-		if (!userCreateRequest.getUsername().matches("^[a-zA-Z0-9_-]{4,16}$")) {
-			throw new BusinessException(StatusCode.BAD_REQUEST, "用户名格式错误");
-		}
-		// 检查密码不过分简单。大小写字母、数字、特殊符号中至少包含两个，且长度大于8小于30。
-		if (!userCreateRequest.getPassword().matches("^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\\W_]+$)(?![a-z0-9]+$)(?![a-z\\W_]+$)(?![0-9\\W_]+$)[a-zA-Z0-9\\W_]{8,30}$")) {
-			throw new BusinessException(StatusCode.BAD_REQUEST, "密码格式错误");
-		}
-		user.setUsername(userCreateRequest.getUsername());
-		user.setPassword(PasswordUtil.encodePassword(userCreateRequest.getPassword()));
-		boolean saveResult = this.save(user);
-		if (!saveResult) {
-			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
-		}
-	}
+        // 检查用户名，特殊符号只能使用-和_，其它不能使用。并且检查字符串个数，大于4小于16
+        if (!userCreateRequest.getUsername().matches("^[a-zA-Z0-9_-]{4,16}$")) {
+            throw new BusinessException(StatusCode.BAD_REQUEST, "用户名格式错误");
+        }
+        // 检查密码不过分简单。大小写字母、数字、特殊符号中至少包含两个，且长度大于8小于30。
+        if (!userCreateRequest.getPassword().matches("^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\\W_]+$)(?![a-z0-9]+$)(?![a-z\\W_]+$)(?![0-9\\W_]+$)[a-zA-Z0-9\\W_]{8,30}$")) {
+            throw new BusinessException(StatusCode.BAD_REQUEST, "密码格式错误");
+        }
+        user.setUsername(userCreateRequest.getUsername());
+        user.setPassword(PasswordUtil.encodePassword(userCreateRequest.getPassword()));
+        user.setEmail("");
+        user.setEmailRaw("");
+        boolean saveResult = this.save(user);
+        if (!saveResult) {
+            throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
+        }
+    }
 
     @Override
     public void deleteUser(Long uid, HttpServletRequest request) {
@@ -193,18 +169,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public CodeGetResponse getCode(String emailOrPhone, Boolean onlyNum) {
         CodeGetResponse codeGetResponse = new CodeGetResponse();
 
-		if (checkCodeHistory(emailOrPhone)) {
-			codeGetResponse.setFrequent(true);
-			return codeGetResponse;
-		}
+        if (checkCodeHistory(emailOrPhone)) {
+            codeGetResponse.setFrequent(true);
+            return codeGetResponse;
+        }
 
-		String code;
-		if (!onlyNum) {
-			String lowercaseCode = StringUtil.getRandomString(6);
-			code = lowercaseCode.toUpperCase();
-		} else {
-			code = NumberUtil.getRandomCode(6);
-		}
+        String code;
+        if (!onlyNum) {
+            String lowercaseCode = StringUtil.getRandomString(6);
+            code = lowercaseCode.toUpperCase();
+        } else {
+            code = NumberUtil.getRandomCode(6);
+        }
 
         authCode.put(emailOrPhone, code);
         putHistory(emailOrPhone);
@@ -222,29 +198,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return this.getById(uid);
     }
 
-	public boolean checkDuplicatesPhone(String phone) {
-		try {
-			QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-			queryWrapper.eq("phone", phone);
-			long count = userMapper.selectCount(queryWrapper);
-			return count > 0;
-		} catch (Throwable e) {
-			log.error(e.toString());
-			return true;
-		}
-	}
+    public boolean checkDuplicatesPhone(String phone) {
+        try {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("phone", phone);
+            long count = userMapper.selectCount(queryWrapper);
+            return count > 0;
+        } catch (Throwable e) {
+            log.error(e.toString());
+            return true;
+        }
+    }
 
-	public boolean checkDuplicatesEmail(String emailRaw) {
-		try {
-			QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-			queryWrapper.eq("emailRaw", emailRaw);
-			long count = userMapper.selectCount(queryWrapper);
-			return count > 0;
-		} catch (Throwable e) {
-			log.error(e.toString());
-			return true;
-		}
-	}
+    public boolean checkDuplicatesEmail(String emailRaw) {
+        try {
+            QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("emailRaw", emailRaw);
+            long count = userMapper.selectCount(queryWrapper);
+            return count > 0;
+        } catch (Throwable e) {
+            log.error(e.toString());
+            return true;
+        }
+    }
 
     public String getRawEmail(String email) {
         String[] emailSplit = email.split("@");
