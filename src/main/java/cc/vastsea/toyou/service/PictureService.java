@@ -2,6 +2,7 @@ package cc.vastsea.toyou.service;
 
 import cc.vastsea.toyou.model.entity.Picture;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.github.benmanes.caffeine.cache.Cache;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,4 +14,8 @@ public interface PictureService extends IService<Picture> {
 
 	@Async("asyncTaskExecutor")
 	Future<Picture> uploadPicture(MultipartFile file) throws IOException;
+
+	void setAllowSaveToDatabase(boolean allowSaveToDatabase);
+
+	Cache<String,Picture> getWaitSavePictureCache();
 }

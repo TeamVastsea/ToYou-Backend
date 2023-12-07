@@ -6,6 +6,7 @@ import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.mapper.UserPictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.model.entity.UserPicture;
+import cc.vastsea.toyou.service.PictureService;
 import cc.vastsea.toyou.service.UserPictureService;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -52,7 +53,8 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 			Picture pictureQuery = new Picture();
 			pictureQuery.setPid(picture.getPid());
 			Picture p = pictureMapper.selectOne(new QueryWrapper<>(pictureQuery));
-			usedStorage += p.getSize();
+			if(p!=null)
+				usedStorage += p.getSize();
 		}
 		return usedStorage;
 	}

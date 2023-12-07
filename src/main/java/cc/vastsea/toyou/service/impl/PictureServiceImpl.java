@@ -5,6 +5,7 @@ import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.service.PictureService;
+import cc.vastsea.toyou.task.CleanupEndTask;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -13,6 +14,8 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Position;
+import org.checkerframework.checker.units.qual.A;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
@@ -38,8 +41,36 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 	public static final Cache<String, Picture> pictureCache = CaffeineFactory.newBuilder()
 			.expireAfterWrite(15, TimeUnit.MINUTES)
 			.build();
+
+	// 清理进行时用户上传图片存储的缓存
+	public static final Cache<String,Picture> waitSavePictureCache = CaffeineFactory.newBuilder()
+			.expireAfterWrite(20,TimeUnit.MINUTES)
+			.build();
+
 	@Resource
 	private PictureMapper pictureMapper;
+
+
+	private boolean allowSaveToDatabase = true;
+
+	// allowSaveToDatabase 是否允许上传图片写入数据库
+	public void setAllowSaveToDatabase(boolean allowSaveToDatabase) {
+		this.allowSaveToDatabase = allowSaveToDatabase;
+		if(allowSaveToDatabase){
+			log.info("end cleanup...");
+		}else {
+			log.info("start cleanup work");
+		}
+	}
+
+	@Override
+	public Cache<String, Picture> getWaitSavePictureCache() {
+		return waitSavePictureCache;
+	}
+
+	public boolean isAllowSaveToDatabase() {
+		return allowSaveToDatabase;
+	}
 
 	@Override
 	public Picture getPicture(String pid) {
@@ -136,11 +167,18 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 		picture.setWatermark(waterPath.toString());
 		picture.setSize(size);
 
-		boolean saveResult = this.save(picture);
-
-		if (!saveResult) {
-			throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
+		// 进行清理时不写入数据库
+		if(!isAllowSaveToDatabase()){
+			pictureCache.put(picture.getPid(),picture);
+			waitSavePictureCache.put(picture.getPid(),picture);
+		}else {
+			boolean saveResult = this.save(picture);
+			if (!saveResult) {
+				throw new BusinessException(StatusCode.INTERNAL_SERVER_ERROR, "添加失败，数据库错误");
+			}
 		}
+
+
 
 		return CompletableFuture.completedFuture(picture);
 	}

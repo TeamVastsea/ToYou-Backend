@@ -1,5 +1,6 @@
 package cc.vastsea.toyou;
 
+import cc.vastsea.toyou.task.CleanupEndTask;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
