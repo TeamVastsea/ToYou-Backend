@@ -31,4 +31,6 @@ public class Picture implements Serializable {
 	private Date updateTime;
 	@TableLogic
 	private Boolean available;
+
+
 }

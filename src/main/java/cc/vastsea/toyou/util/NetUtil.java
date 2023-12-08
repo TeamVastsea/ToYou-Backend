@@ -12,6 +12,16 @@ import java.net.InetAddress;
 public class NetUtil {
 
 	/**
+	 * 判断是否为本地请求
+	 */
+	public static boolean isLocalAddress(HttpServletRequest request){
+		String ipAddress = getIpAddress(request);
+		return ipAddress.equalsIgnoreCase("127.0.0.1") ||
+				ipAddress.equalsIgnoreCase("::1") ||
+				ipAddress.equalsIgnoreCase("0:0:0:0:0:0:0:1");
+	}
+
+	/**
 	 * 获取客户端 IP 地址
 	 */
 	public static String getIpAddress(HttpServletRequest request) {
