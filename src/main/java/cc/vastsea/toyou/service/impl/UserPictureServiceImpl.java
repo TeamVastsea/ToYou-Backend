@@ -49,11 +49,13 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 		Set<UserPicture> pictures = getUserPictures(uid);
 		long usedStorage = 0;
 		for (UserPicture picture : pictures) {
-			Picture pictureQuery = new Picture();
-			pictureQuery.setPid(picture.getPid());
-			Picture p = pictureMapper.selectOne(new QueryWrapper<>(pictureQuery));
-			if(p!=null)
+			if (!picture.getAvailable()) {
+				continue;
+			}
+			Picture p = pictureMapper.selectById(picture.getId());
+			if(p!=null) {
 				usedStorage += p.getSize();
+			}
 		}
 		return usedStorage;
 	}

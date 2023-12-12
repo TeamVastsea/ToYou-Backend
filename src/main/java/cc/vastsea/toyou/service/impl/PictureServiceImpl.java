@@ -11,6 +11,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import net.coobird.thumbnailator.Thumbnails;
 import net.coobird.thumbnailator.geometry.Position;
@@ -51,6 +52,7 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 	private PictureMapper pictureMapper;
 
 
+	@Getter
 	private boolean allowSaveToDatabase = true;
 
 	// allowSaveToDatabase 是否允许上传图片写入数据库
@@ -66,10 +68,6 @@ public class PictureServiceImpl extends ServiceImpl<PictureMapper, Picture> impl
 	@Override
 	public Cache<String, Picture> getWaitSavePictureCache() {
 		return waitSavePictureCache;
-	}
-
-	public boolean isAllowSaveToDatabase() {
-		return allowSaveToDatabase;
 	}
 
 	@Override
