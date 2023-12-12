@@ -6,7 +6,6 @@ import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.mapper.UserPictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.model.entity.UserPicture;
-import cc.vastsea.toyou.service.PictureService;
 import cc.vastsea.toyou.service.UserPictureService;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
