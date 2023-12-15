@@ -51,6 +51,7 @@ public class ShareServiceImpl extends ServiceImpl<ShareMapper, Share> implements
 		share.setSid(uuid.toString());
 		share.setId(userPicture.getId());
 		share.setShareMode(shareMode.getCode());
+		share.setUid(userPicture.getUid());
 		if (!StringUtils.isAnyBlank(password)) {
 			share.setPassword(password);
 		}
