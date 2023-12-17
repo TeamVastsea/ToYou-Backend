@@ -52,7 +52,7 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 			if (!picture.getAvailable()) {
 				continue;
 			}
-			Picture p = pictureMapper.selectById(picture.getId());
+			Picture p = pictureMapper.selectById(picture.getPid());
 			if(p!=null) {
 				usedStorage += p.getSize();
 			}
