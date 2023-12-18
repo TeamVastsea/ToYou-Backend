@@ -162,7 +162,7 @@ public class PictureController {
         long current = shareListRequest.getCurrent();
         long size = shareListRequest.getPageSize();
 
-        if (size > 100) {
+        if (size > 20) {
             throw new BusinessException(StatusCode.FORBIDDEN, "页面过大");
         }
 
@@ -173,6 +173,7 @@ public class PictureController {
             ShareVO shareVO = new ShareVO();
             BeanUtils.copyProperties(share, shareVO);
             shareVO.setPassword(share.getPassword() != null);
+            shareVO.setFileName(userPictureService.getById(share.getId()).getFileName());
             return shareVO;
         }).collect(Collectors.toList());
         shareVOPage.setRecords(shareVOList);

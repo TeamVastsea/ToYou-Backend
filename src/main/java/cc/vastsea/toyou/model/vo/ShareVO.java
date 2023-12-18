@@ -18,6 +18,7 @@ public class ShareVO implements Serializable {
     private Long id;
     private Long uid;
     private Boolean password;
+    private String fileName;
     private Long downloads;
     private Integer shareMode;
     private Long expiry;
