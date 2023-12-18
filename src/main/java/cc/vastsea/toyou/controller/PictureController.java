@@ -172,6 +172,7 @@ public class PictureController {
         List<ShareVO> shareVOList = sharePage.getRecords().stream().map(share -> {
             ShareVO shareVO = new ShareVO();
             BeanUtils.copyProperties(share, shareVO);
+            shareVO.setPassword(share.getPassword() != null);
             return shareVO;
         }).collect(Collectors.toList());
         shareVOPage.setRecords(shareVOList);
