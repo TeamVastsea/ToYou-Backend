@@ -129,4 +129,18 @@ public class UserController {
 		userService.userLogout(request);
 		return new ResponseEntity<>("success", null, StatusCode.OK);
 	}
+
+	@PatchMapping("/username")
+	public ResponseEntity<String> changeUsername(@RequestParam("username") String newUsername, HttpServletRequest request) {
+		User user = userService.getTokenLogin(request);
+		userService.changeUsername(user, newUsername);
+		return new ResponseEntity<>("", null, StatusCode.OK);
+	}
+
+	@PatchMapping("/password")
+	public ResponseEntity<String> changePassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, HttpServletRequest request) {
+		User user = userService.getTokenLogin(request);
+		userService.changePassword(user, oldPassword, newPassword);
+		return new ResponseEntity<>("", null, StatusCode.OK);
+	}
 }

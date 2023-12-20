@@ -19,10 +19,8 @@ import com.github.benmanes.caffeine.cache.Cache;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -272,6 +270,24 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 throw new BusinessException(StatusCode.UNAUTHORIZED, "未登录");
             }
         }
+    }
+
+    @Override
+    public void changeUsername(User user, String newUsername) {
+        user.setUsername(newUsername);
+        userMapper.updateById(user);
+    }
+
+    @Override
+    public void changePassword(User user, String oldPassword, String newPassword) {
+        if (!PasswordUtil.checkPassword(oldPassword, user.getPassword())) {
+            throw new BusinessException(StatusCode.UNAUTHORIZED, "旧密码错误");
+        }
+        if (!newPassword.matches("^(?![a-zA-Z]+$)(?![A-Z0-9]+$)(?![A-Z\\W_]+$)(?![a-z0-9]+$)(?![a-z\\W_]+$)(?![0-9\\W_]+$)[a-zA-Z0-9\\W_]{8,30}$")) {
+            throw new BusinessException(StatusCode.BAD_REQUEST, "密码格式错误");
+        }
+        user.setPassword(PasswordUtil.encodePassword(newPassword));
+        userMapper.updateById(user);
     }
 
     boolean checkCodeHistory(String emailOrPhone) {
