@@ -21,10 +21,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
-import static cc.vastsea.toyou.constant.UserConstant.*;
+import static cc.vastsea.toyou.constant.UserConstant.USER_LOGIN_STATE;
+import static cc.vastsea.toyou.constant.UserConstant.USER_TOKEN_HEADER;
 
 @Service
 @Slf4j
@@ -287,6 +290,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new BusinessException(StatusCode.BAD_REQUEST, "密码格式错误");
         }
         user.setPassword(PasswordUtil.encodePassword(newPassword));
+        //log user out
+        Map<UUID, Long> tokenMap = userLoginToken.asMap();
+        for (Map.Entry<UUID, Long> entry : tokenMap.entrySet()) {
+            if (Objects.equals(entry.getValue(), user.getUid())) {
+                userLoginToken.invalidate(entry.getKey());
+            }
+        }
         userMapper.updateById(user);
     }
 
