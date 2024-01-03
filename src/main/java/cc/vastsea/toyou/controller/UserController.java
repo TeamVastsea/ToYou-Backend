@@ -40,7 +40,7 @@ public class UserController {
 	private static final Pattern numberPattern = Pattern.compile("[0-9]*");
 
 	@GetMapping("/code/email")
-	public ResponseEntity<String> getEmailCode(@RequestParam String email) {
+	public ResponseEntity<String> getEmailCode(@RequestParam("email") String email) {
 		CodeGetResponse ecr = userService.getCode(email, false);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
