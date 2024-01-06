@@ -44,6 +44,7 @@ dependencies {
     implementation 'org.aspectj:aspectjweaver:1.9.20.1'
     implementation 'net.coobird:thumbnailator:0.4.20'
     implementation 'com.alipay.sdk:alipay-easysdk:2.2.3'
+    implementation 'com.alipay.sdk:alipay-sdk-java:4.34.0.ALL'
     implementation 'com.github.wechatpay-apiv3:wechatpay-java:0.2.12'
     implementation 'com.aliyun:aliyun-java-sdk-core:4.6.4'
     implementation 'com.aliyun:aliyun-java-sdk-dysmsapi:2.2.1'
