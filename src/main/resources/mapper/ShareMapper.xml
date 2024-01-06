@@ -7,6 +7,7 @@
     <resultMap id="BaseResultMap" type="cc.vastsea.toyou.model.entity.Share">
         <id property="sid" column="sid" jdbcType="VARCHAR"/>
         <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="uid" column="uid" jdbcType="BIGINT"/>
         <result property="password" column="password" jdbcType="VARCHAR"/>
         <result property="downloads" column="downloads" jdbcType="BIGINT"/>
         <result property="shareMode" column="shareMode" jdbcType="INTEGER"/>

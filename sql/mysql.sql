@@ -54,7 +54,8 @@ CREATE TABLE IF NOT EXISTS `share`
 (
     sid        VARCHAR(36)                        NOT NULL COMMENT 'sid-uuid' PRIMARY KEY,
     id         BIGINT                             NOT NULL COMMENT 'user_picture的id',
-    password   VARCHAR(32) COMMENT '密码',
+    uid        BIGINT                             NOT NULL COMMENT 'uid',
+    password   VARCHAR(32)                                 COMMENT '密码',
     downloads  BIGINT   DEFAULT 0                 NOT NULL COMMENT '下载次数',
     shareMode  INTEGER  DEFAULT 0                 NOT NULL COMMENT '分享模式',
     expiry     BIGINT   DEFAULT 0                 NOT NULL COMMENT '过期时间',

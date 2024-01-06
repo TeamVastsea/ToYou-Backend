@@ -20,6 +20,7 @@ public class Share implements Serializable {
 	@TableId(type = IdType.AUTO)
 	private String sid;
 	private Long id;
+	private Long uid;
 	private String password;
 	private Long downloads;
 	private Integer shareMode;

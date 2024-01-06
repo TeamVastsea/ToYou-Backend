@@ -36,4 +36,8 @@ public interface UserService extends IService<User> {
 	boolean checkDuplicatesEmail(String emailRaw);
 
 	String getRawEmail(String email);
+
+	void changeUsername(User user, String newUsername);
+
+	void changePassword(User user, String oldPassword, String newPassword);
 }

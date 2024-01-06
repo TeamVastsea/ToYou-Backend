@@ -40,7 +40,7 @@ public class UserController {
 	private static final Pattern numberPattern = Pattern.compile("[0-9]*");
 
 	@GetMapping("/code/email")
-	public ResponseEntity<String> getEmailCode(@RequestParam String email) {
+	public ResponseEntity<String> getEmailCode(@RequestParam("email") String email) {
 		CodeGetResponse ecr = userService.getCode(email, false);
 		if (ecr.getFrequent()) {
 			return new ResponseEntity<>("too frequent", null, StatusCode.TOO_MANY_REQUESTS);
@@ -128,5 +128,19 @@ public class UserController {
 	public ResponseEntity<String> userLogout(HttpServletRequest request) {
 		userService.userLogout(request);
 		return new ResponseEntity<>("success", null, StatusCode.OK);
+	}
+
+	@PatchMapping("/username")
+	public ResponseEntity<String> changeUsername(@RequestParam("username") String newUsername, HttpServletRequest request) {
+		User user = userService.getTokenLogin(request);
+		userService.changeUsername(user, newUsername);
+		return new ResponseEntity<>("", null, StatusCode.OK);
+	}
+
+	@PatchMapping("/password")
+	public ResponseEntity<String> changePassword(@RequestParam("old") String oldPassword, @RequestParam("new") String newPassword, HttpServletRequest request) {
+		User user = userService.getTokenLogin(request);
+		userService.changePassword(user, oldPassword, newPassword);
+		return new ResponseEntity<>("", null, StatusCode.OK);
 	}
 }

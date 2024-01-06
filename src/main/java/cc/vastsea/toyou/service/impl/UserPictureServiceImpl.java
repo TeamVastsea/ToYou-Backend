@@ -6,7 +6,6 @@ import cc.vastsea.toyou.mapper.PictureMapper;
 import cc.vastsea.toyou.mapper.UserPictureMapper;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.model.entity.UserPicture;
-import cc.vastsea.toyou.service.PictureService;
 import cc.vastsea.toyou.service.UserPictureService;
 import cc.vastsea.toyou.util.CaffeineFactory;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -50,11 +49,13 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 		Set<UserPicture> pictures = getUserPictures(uid);
 		long usedStorage = 0;
 		for (UserPicture picture : pictures) {
-			Picture pictureQuery = new Picture();
-			pictureQuery.setPid(picture.getPid());
-			Picture p = pictureMapper.selectOne(new QueryWrapper<>(pictureQuery));
-			if(p!=null)
+			if (!picture.getAvailable()) {
+				continue;
+			}
+			Picture p = pictureMapper.selectById(picture.getPid());
+			if(p!=null) {
 				usedStorage += p.getSize();
+			}
 		}
 		return usedStorage;
 	}
@@ -74,35 +75,53 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 
 	@Override
 	public boolean isExistSameName(long uid, String fileName) {
-		Set<UserPicture> pictures = getUserPictures(uid);
-		for (UserPicture picture : pictures) {
-			if (picture.getFileName().equalsIgnoreCase(fileName)) {
-				return true;
-			}
-		}
-		return false;
+//		Set<UserPicture> pictures = getUserPictures(uid);
+//		for (UserPicture picture : pictures) {
+//			if (picture.getFileName().equalsIgnoreCase(fileName) && picture.getAvailable()) {
+//				return true;
+//			}
+//		}
+		QueryWrapper<UserPicture> wrapper = new QueryWrapper<>();
+		wrapper.eq("uid", uid);
+		wrapper.eq("fileName", fileName);
+		wrapper.eq("available", true);
+
+		return userPictureMapper.exists(wrapper);
 	}
 
 	@Override
 	public boolean isPictureBelongToUser(long uid, String pid) {
-		Set<UserPicture> pictures = getUserPictures(uid);
-		for (UserPicture picture : pictures) {
-			if (picture.getPid().equals(pid)) {
-				return true;
-			}
-		}
-		return false;
+		QueryWrapper<UserPicture> wrapper = new QueryWrapper<>();
+		wrapper.eq("uid", uid);
+		wrapper.eq("pid", pid);
+		wrapper.eq("available", true);
+
+		return userPictureMapper.exists(wrapper);
+
+//		Set<UserPicture> pictures = getUserPictures(uid);
+//		for (UserPicture picture : pictures) {
+//			if (picture.getPid().equals(pid)) {
+//				return true;
+//			}
+//		}
+//		return false;
 	}
 
 	@Override
 	public UserPicture getUserPicture(long uid, Long id) {
-		Set<UserPicture> pictures = getUserPictures(uid);
-		for (UserPicture picture : pictures) {
-			if (picture.getId().equals(id)) {
-				return picture;
-			}
+		UserPicture picture = userPictureMapper.selectById(id);
+		if (picture != null && picture.getUid() != uid) {
+			return null;
 		}
-		return null;
+		return picture;
+
+//		Set<UserPicture> pictures = getUserPictures(uid);
+//		for (UserPicture picture : pictures) {
+//			if (picture.getId().equals(id)) {
+//				return picture;
+//			}
+//		}
+//		return null;
 	}
 
 	@Override
@@ -125,6 +144,8 @@ public class UserPictureServiceImpl extends ServiceImpl<UserPictureMapper, UserP
 		if (userPicture == null) {
 			throw new BusinessException(StatusCode.NOT_FOUND, "图片不存在");
 		}
+		userPictures.invalidate(userPicture.getUid());
+
 		userPicture.setFileName(name);
 		boolean result = this.updateById(userPicture);
 		if (!result) {
