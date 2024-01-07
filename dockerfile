@@ -1,4 +1,4 @@
-FROM gradle:7.1.0-jdk11 AS builder
+FROM gradle:jdk17 AS builder
 ENV APP_HOME=/usr/app/
 WORKDIR $APP_HOME
 COPY build.gradle settings.gradle gradlew $APP_HOME
