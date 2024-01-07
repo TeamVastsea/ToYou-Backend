@@ -1,6 +1,7 @@
 package cc.vastsea.toyou.controller;
 
 import cc.vastsea.toyou.common.StatusCode;
+import cc.vastsea.toyou.mapper.RealNameMapper;
 import cc.vastsea.toyou.model.dto.CodeGetResponse;
 import cc.vastsea.toyou.model.dto.UserCreateRequest;
 import cc.vastsea.toyou.model.dto.UserLoginRequest;
@@ -36,6 +37,9 @@ public class UserController {
 	private UserPictureService userPictureService;
 	@Resource
 	private AliyunSmsService aliyunSmsService;
+
+	@Resource
+	private RealNameMapper realNameMapper;
 
 	private static final Pattern numberPattern = Pattern.compile("[0-9]*");
 
@@ -97,11 +101,19 @@ public class UserController {
 		return new ResponseEntity<>("success", null, StatusCode.CREATED);
 	}
 
+	@GetMapping("/certify")
+	public ResponseEntity<Boolean> certify(HttpServletRequest httpServletRequest){
+
+		User tokenLogin = userService.getTokenLogin(httpServletRequest);
+		if(tokenLogin==null) return new ResponseEntity<>(false,null,StatusCode.OK);
+
+		return new ResponseEntity<>(realNameMapper.selectById(tokenLogin.getUid())!=null,null,StatusCode.OK);
+	}
+
 	@GetMapping("")
 	public ResponseEntity<UserVO> userLogin(UserLoginRequest userLoginRequest, HttpServletRequest request) {
 		UserVO userVO = userService.userLogin(userLoginRequest, request);
 
-		// null
 		Boolean ext = userLoginRequest.getExtended();
 		if (ext != null && ext) {
 			UserVO.ExtendUserInformation extended = new UserVO.ExtendUserInformation();
