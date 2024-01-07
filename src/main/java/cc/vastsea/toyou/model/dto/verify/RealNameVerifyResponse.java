@@ -17,5 +17,4 @@ public class RealNameVerifyResponse {
 
     @SerializedName("certify_url")
     private String certifyUrl;
-
 }

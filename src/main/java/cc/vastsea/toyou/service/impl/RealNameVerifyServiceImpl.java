@@ -106,7 +106,7 @@ public class RealNameVerifyServiceImpl implements RealNameVerifyService {
                 .setBizContent(gson.toJson(realNameVerifyRequest));
 
         try {
-            DatadigitalFincloudGeneralsaasFaceCertifyInitializeResponse execute = getAliPayClient().execute(datadigitalFincloudGeneralsaasFaceCertifyInitializeRequest);
+            DatadigitalFincloudGeneralsaasFaceCertifyInitializeResponse execute = getAliPayClient().certificateExecute(datadigitalFincloudGeneralsaasFaceCertifyInitializeRequest);
             realNameVerifyResponse.setCode(execute.getCode());
             realNameVerifyResponse.setMessage(execute.getSubMsg());
             // 认证成功
@@ -145,7 +145,7 @@ public class RealNameVerifyServiceImpl implements RealNameVerifyService {
 
 
         try {
-            DatadigitalFincloudGeneralsaasFaceCertifyVerifyResponse execute = getAliPayClient().execute(request);
+            DatadigitalFincloudGeneralsaasFaceCertifyVerifyResponse execute = getAliPayClient().certificateExecute(request);
             realNameVerifyResponse.setCode(execute.getCode());
             realNameVerifyResponse.setMessage(execute.getSubMsg());
             if(execute.isSuccess()){
@@ -172,7 +172,7 @@ public class RealNameVerifyServiceImpl implements RealNameVerifyService {
 
         DatadigitalFincloudGeneralsaasFaceCertifyQueryResponse response = null;
         try {
-            response = getAliPayClient().execute(request);
+            response = getAliPayClient().certificateExecute(request);
 
             if(response.isSuccess()){
                 // 写入实名信息到数据库
