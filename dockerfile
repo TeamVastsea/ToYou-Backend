@@ -1,11 +1,11 @@
 FROM gradle:jdk17 AS builder
 ENV APP_HOME=/usr/app/
 WORKDIR $APP_HOME
-COPY build.gradle settings.gradle gradlew $APP_HOME
+COPY build.gradle settings.gradle $APP_HOME
 COPY gradle $APP_HOME/gradle
-RUN ./gradlew build
+RUN gradle build
 COPY . .
-RUN ./gradlew build
+RUN gradle build
 
 FROM openjdk:17
 RUN microdnf install findutils
