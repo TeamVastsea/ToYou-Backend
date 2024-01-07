@@ -1,7 +1,7 @@
 FROM openjdk:17 AS builder
 ENV APP_HOME=/usr/app/
 WORKDIR $APP_HOME
-RUN apt install xargs -y
+RUN microdnf install findutils
 COPY build.gradle settings.gradle gradlew $APP_HOME
 COPY gradle $APP_HOME/gradle
 RUN ./gradlew build
