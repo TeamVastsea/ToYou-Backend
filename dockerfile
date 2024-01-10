@@ -4,10 +4,10 @@ WORKDIR $APP_HOME
 RUN microdnf install findutils
 COPY . .
 RUN ./gradlew build
+RUN ./gradlew rename
 
 FROM openjdk:17
-RUN microdnf install findutils
-ENV ARTIFACT_NAME=toyou-backend.jar
+ENV ARTIFACT_NAME=toyou.jar
 ENV APP_HOME=/usr/app/
 WORKDIR $APP_HOME
 COPY --from=builder $APP_HOME/build/libs/$ARTIFACT_NAME .

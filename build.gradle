@@ -73,3 +73,9 @@ tasks.withType(JavaCompile).configureEach {
 javadoc {
     options.encoding = "UTF-8"
 }
+
+tasks.register('rename', Copy) {
+        from(file("${buildDir}/libs/${project.name}-${version}.jar"))
+        into("${buildDir}/libs/")
+        rename("${project.name}-${version}.jar", "toyou.jar")
+}
