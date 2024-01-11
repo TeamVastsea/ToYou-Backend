@@ -13,7 +13,6 @@ public class AliPayClientUtil {
     private String privateKey;
     private String appCert;
     private String alipayCert;
-
     private String alipayRootCert;
 
     private final AlipayClient alipayClient;
@@ -22,8 +21,8 @@ public class AliPayClientUtil {
 
         try {
             this.privateKey = new String(Files.readAllBytes(Paths.get("./profile/alipay/privateKey.txt")));
-            this.appCert = Paths.get("./profile/alipay/appCertPublicKey_2021004125628045.crt").toString();
-            this.alipayCert  = Paths.get("./profile/alipay/alipayCertPublicKey_RSA2.crt").toString();
+            this.appCert = Paths.get("./profile/alipay/appCertPublicKey.crt").toString();
+            this.alipayCert  = Paths.get("./profile/alipay/alipayCertPublicKey.crt").toString();
             this.alipayRootCert  = Paths.get("./profile/alipay/alipayRootCert.crt").toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -32,10 +31,10 @@ public class AliPayClientUtil {
         CertAlipayRequest certAlipayRequest = new CertAlipayRequest();
         certAlipayRequest.setServerUrl(url);
         certAlipayRequest.setAppId("2021004125628045");
-        certAlipayRequest.setPrivateKey(privateKey);
         certAlipayRequest.setFormat("JSON");
         certAlipayRequest.setCharset("utf-8");
         certAlipayRequest.setSignType("RSA2");
+        certAlipayRequest.setPrivateKey(privateKey);
         certAlipayRequest.setCertPath(appCert);
         certAlipayRequest.setAlipayPublicCertPath(alipayCert);
         certAlipayRequest.setRootCertPath(alipayRootCert);
