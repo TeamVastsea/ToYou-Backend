@@ -27,7 +27,7 @@ public class RealNameVerifyController {
         return new ResponseEntity<>(realNameVerifyResponse, null, StatusCode.OK);
     }
 
-    @PostMapping("/verify")
+    @PostMapping("/start")
     public ResponseEntity<RealNameVerifyResponse> start(String certifyId,String url,
                                                         HttpServletRequest request){
         return new ResponseEntity<>(realNameVerifyService.startVerify(certifyId,url),null,StatusCode.OK);
