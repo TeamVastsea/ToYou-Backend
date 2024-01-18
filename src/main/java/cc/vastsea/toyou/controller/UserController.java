@@ -87,7 +87,7 @@ public class UserController {
 		return new ResponseEntity<>("false", null, StatusCode.OK);
 	}
 
-	@GetMapping("/{uid}")
+	@GetMapping("/uid/{uid}")
 	public ResponseEntity<UserVO> getUser(@PathVariable("uid") Long uid, HttpServletRequest request) {
 		User user = userService.getUserByUid(uid, request);
 		UserVO userVO = new UserVO();
@@ -101,7 +101,7 @@ public class UserController {
 		return new ResponseEntity<>("success", null, StatusCode.CREATED);
 	}
 
-	@GetMapping("/certify")
+	@GetMapping("/name/verify")
 	public ResponseEntity<Boolean> certify(HttpServletRequest httpServletRequest){
 
 		User tokenLogin = userService.getTokenLogin(httpServletRequest);
