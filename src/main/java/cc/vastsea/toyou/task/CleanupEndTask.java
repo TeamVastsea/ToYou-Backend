@@ -4,19 +4,16 @@ import cc.vastsea.toyou.common.StatusCode;
 import cc.vastsea.toyou.exception.BusinessException;
 import cc.vastsea.toyou.model.entity.Picture;
 import cc.vastsea.toyou.service.PictureService;
-import com.github.benmanes.caffeine.cache.Cache;
-import jakarta.annotation.Resource;
+
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.stereotype.Component;
 
-import javax.print.PrintService;
 import java.util.Date;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static cc.vastsea.toyou.service.impl.PictureServiceImpl.waitSavePictureCache;
 
 @Component
 @Slf4j

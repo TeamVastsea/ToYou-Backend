@@ -163,7 +163,8 @@ public class RealNameVerifyServiceImpl implements RealNameVerifyService {
      */
     public boolean verifyResultQuery(HttpServletRequest httpServletRequest,String certifyId){
 
-        DatadigitalFincloudGeneralsaasFaceCertifyQueryRequest request = new DatadigitalFincloudGeneralsaasFaceCertifyQueryRequest();
+        DatadigitalFincloudGeneralsaasFaceCertifyQueryRequest request =
+                new DatadigitalFincloudGeneralsaasFaceCertifyQueryRequest();
 
         JsonObject jsonObject = new JsonObject();
         jsonObject.addProperty("certify_id",certifyId);
@@ -174,23 +175,21 @@ public class RealNameVerifyServiceImpl implements RealNameVerifyService {
         try {
             response = getAliPayClient().certificateExecute(request);
 
-            if(response.isSuccess()){
+            if(response.isSuccess()
+            &&response.getPassed().equalsIgnoreCase("T")){
                 // 写入实名信息到数据库
                 User tokenLogin = userService.getTokenLogin(httpServletRequest);
-
                 RealNameVerifyInfo realNameVerifyInfo = realNameVerifyInfoMap.getIfPresent(certifyId);
                 RealName realName = new RealName();
                 realName.setUid(tokenLogin.getUid());
                 realName.setName(realNameVerifyInfo.getCertName());
                 realName.setIdCard(realNameVerifyInfo.getCertNo());
                 realName.setPass(true);
-
                 realNameMapper.insert(realName);
-
                 return true;
             }
 
-
+            
         } catch (AlipayApiException e) {
             throw new RuntimeException(e);
         }

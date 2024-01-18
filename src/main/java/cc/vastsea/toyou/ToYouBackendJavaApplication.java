@@ -16,9 +16,8 @@ import java.util.Random;
 @EnableAsync
 @EnableCaching
 public class ToYouBackendJavaApplication {
-
-	public static void main(String[] args) {
+	public static void main(String[] args)
+	{
 		SpringApplication.run(ToYouBackendJavaApplication.class, args);
 	}
-
 }
