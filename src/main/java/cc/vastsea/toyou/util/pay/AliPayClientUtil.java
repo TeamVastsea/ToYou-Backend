@@ -3,6 +3,8 @@ package cc.vastsea.toyou.util.pay;
 import com.alipay.api.*;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
 @Slf4j
@@ -17,10 +19,14 @@ public class AliPayClientUtil {
 
     private CertAlipayRequest alipayConfig(String url){
 
-        this.privateKey = Paths.get("./profile/alipay/privateKey.txt").toString();
-        this.appCert = Paths.get("./profile/alipay/appCertPublicKey.crt").toString();
-        this.alipayCert  = Paths.get("./profile/alipay/alipayCertPublicKey.crt").toString();
-        this.alipayRootCert  = Paths.get("./profile/alipay/alipayRootCert.crt").toString();
+        try {
+            this.privateKey = new String(Files.readAllBytes(Paths.get("./profile/alipay/privateKey.txt")));
+            this.appCert = Paths.get("./profile/alipay/appCertPublicKey.crt").toString();
+            this.alipayCert  = Paths.get("./profile/alipay/alipayCertPublicKey.crt").toString();
+            this.alipayRootCert  = Paths.get("./profile/alipay/alipayRootCert.crt").toString();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         CertAlipayRequest certAlipayRequest = new CertAlipayRequest();
         certAlipayRequest.setServerUrl(url);

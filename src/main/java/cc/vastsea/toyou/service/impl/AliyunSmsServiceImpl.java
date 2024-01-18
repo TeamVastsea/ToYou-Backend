@@ -36,6 +36,7 @@ public class AliyunSmsServiceImpl implements AliyunSmsService {
 	 */
 	@Value("${sms.aliyun.access-key-secret}")
 	private String accessKeySecret;
+
 	/**
 	 * 短信模板代码，这是您在阿里云短信服务中创建的模板的代码。
 	 */
