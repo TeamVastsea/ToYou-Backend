@@ -1,4 +1,4 @@
-fn log() -> () {
+fn init_log() -> () {
     let init = tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
         .try_init();
@@ -8,5 +8,5 @@ fn log() -> () {
 }
 
 fn main() {
-    log();
+    init_log();
 }
