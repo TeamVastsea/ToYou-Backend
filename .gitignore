@@ -1,0 +1,13 @@
+HELP.md
+
+# cargo
+target/
+
+### VS Code ###
+.vscode/
+
+/config/
+logs/
+pictures/
+release/
+profile/
