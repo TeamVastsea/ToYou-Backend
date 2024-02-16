@@ -15,12 +15,14 @@ tracing-subscriber = "0.3.18"
 axum = "0.7.4"
 tokio = { version = "1.36.0", features = ["full"] }
 
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0.196", features = ["derive"] }
 serde_json = "1.0.113"
-toml = "0.8.8"
+serde-inline-default = "0.1.1"
+toml = "0.8.10"
 
 blake3 = "1.5.0"
 base16384 = "0.1.0"
 
+sea-orm = { version = "0.12", features = ["macros", "sqlx-postgres", "runtime-tokio-rustls"] }
 migration = { path = "migration" }
 

@@ -7,8 +7,9 @@ Cargo.lock
 ### VS Code ###
 .vscode/
 
-/config/
+config/
 logs/
 pictures/
 release/
 profile/
+config.toml
