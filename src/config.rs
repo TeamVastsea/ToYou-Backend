@@ -7,7 +7,7 @@ use serde_inline_default::serde_inline_default;
 use tokio::fs;
 
 #[serde_inline_default]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
     #[serde(default = "generate_connection_setting")]
     pub connection: ConnectionConfig,
@@ -16,7 +16,7 @@ pub struct Config {
 }
 
 #[serde_inline_default]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct ConnectionConfig {
     #[serde_inline_default(String::from("0.0.0.0:7890"))]
     pub server_addr: String,

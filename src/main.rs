@@ -1,11 +1,12 @@
+use std::sync::Arc;
 use axum::{http, Router};
 use axum::body::Body;
 use axum::extract::DefaultBodyLimit;
 use axum::http::Request;
-use axum::routing::get;
+use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
 use chrono::Local;
-use sea_orm::{ConnectOptions, Database};
+use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::trace::TraceLayer;
 use tracing::{debug, info, Span, warn};
@@ -20,9 +21,11 @@ use tracing_subscriber::util::SubscriberInitExt;
 use migration::{Migrator, MigratorTrait};
 
 use crate::config::{Config, rename_log};
+use crate::service::picture::upload::post_picture;
 
 mod config;
 mod model;
+mod service;
 
 #[tokio::main]
 async fn main() {
@@ -50,7 +53,7 @@ async fn main() {
         .init();
 
 
-    let mut opt = ConnectOptions::new(config.connection.db_uri);
+    let mut opt = ConnectOptions::new(&config.connection.db_uri);
     opt.sqlx_logging(true);
     opt.sqlx_logging_level(LevelFilter::Debug);
     let db = Database::connect(opt).await.unwrap();
@@ -65,8 +68,15 @@ async fn main() {
             debug!("{}", response.status());
         });
 
+    let app_state = Arc::new(ServerState {
+        config: config.clone(),
+        db,
+    });
+
     let app = Router::new()
+        .route("/picture", post(post_picture))
         .route("/ping", get(ping))
+        .with_state(app_state)
         .layer(trace_layer)
         .layer(CatchPanicLayer::new())
         .layer(DefaultBodyLimit::max(config.connection.max_body_size * 1024 * 1024));
@@ -82,6 +92,11 @@ async fn main() {
         axum_server::bind(addr).serve(app.into_make_service()).await.unwrap();
     }
     println!("Hello, world!");
+}
+
+struct ServerState {
+    pub config: Config,
+    pub db: DatabaseConnection,
 }
 
 async fn ping() -> String {
