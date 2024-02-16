@@ -18,40 +18,15 @@ impl MigrationTrait for Migration {
                             .auto_increment()
                             .primary_key(),
                     )
-                    .col(
-                        ColumnDef::new(User::Username)
-                            .string()
-                            .unique_key()
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(User::Username).string().unique_key().not_null())
                     .col(ColumnDef::new(User::Password).string_len(65_u32).not_null())
                     // TJDWgyZMeJsBsoLt6Rd4$IEt9C7+nzB8sqJcQJLZblsQF/50stiRJDcF6pby1zjo=
                     .col(ColumnDef::new(User::Phone).string().unique_key().not_null())
                     .col(ColumnDef::new(User::Email).string().null())
-                    .col(
-                        ColumnDef::new(User::Available)
-                            .boolean()
-                            .default(true)
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(User::Level)
-                            .json()
-                            .default("[]")
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(User::CreateTime)
-                            .timestamp()
-                            .default(Expr::current_timestamp())
-                            .not_null(),
-                    )
-                    .col(
-                        ColumnDef::new(User::UpdateTime)
-                            .timestamp()
-                            .default(Expr::current_timestamp())
-                            .not_null(),
-                    )
+                    .col(ColumnDef::new(User::Available).boolean().default(true).not_null())
+                    .col(ColumnDef::new(User::Level).array(ColumnType::String(None)).not_null())
+                    .col(ColumnDef::new(User::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
+                    .col(ColumnDef::new(User::UpdateTime).timestamp().default(Expr::current_timestamp()).not_null())
                     .to_owned(),
             )
             .await
@@ -74,6 +49,7 @@ enum User {
     Email,
     Available,
     Level,
+    Root,
     CreateTime,
     UpdateTime,
 }

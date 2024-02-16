@@ -4,7 +4,7 @@ use sea_orm::{ConnectOptions, Database};
 use tracing::log::LevelFilter;
 
 mod config;
-mod data_struct;
+mod model;
 
 fn init_log() -> () {
     let init = tracing_subscriber::fmt()

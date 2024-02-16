@@ -6,6 +6,7 @@ Cargo.lock
 
 ### VS Code ###
 .vscode/
+.idea/
 
 config/
 logs/
