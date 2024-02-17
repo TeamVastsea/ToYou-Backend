@@ -1,6 +1,6 @@
-use std::path::PathBuf;
-use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
+use base64::Engine;
+use std::path::PathBuf;
 use tokio::fs::try_exists;
 
 /// Save a file to disk and generate the id of the file
@@ -19,12 +19,10 @@ use tokio::fs::try_exists;
 /// println!("{file_id:?}");
 /// ```
 pub async fn save_file(file_content: impl AsRef<[u8]>) -> Option<String> {
-
     let mut hasher = blake3::Hasher::new();
     hasher.update(file_content.as_ref());
     hasher.update(&file_content.as_ref().len().to_le_bytes());
     let hasher = hasher.finalize();
-
 
     let id = format!("{}", BASE64_URL_SAFE_NO_PAD.encode(hasher.as_bytes()));
     let id = (&id[1..]).to_string();
@@ -36,8 +34,12 @@ pub async fn save_file(file_content: impl AsRef<[u8]>) -> Option<String> {
     if try_exists(&path).await.unwrap() {
         return Some(id);
     }
-    tokio::fs::create_dir_all(&path.parent().unwrap()).await.unwrap();
-    tokio::fs::write(&path, file_content.as_ref()).await.unwrap();
+    tokio::fs::create_dir_all(&path.parent().unwrap())
+        .await
+        .unwrap();
+    tokio::fs::write(&path, file_content.as_ref())
+        .await
+        .unwrap();
 
     Some(id)
 }

@@ -18,10 +18,19 @@ impl MigrationTrait for Migration {
                             .extra("DEFAULT gen_random_uuid()")
                             .primary_key(),
                     )
-                    .col(ColumnDef::new(Share::Content).array(ColumnType::String(None)).not_null())
+                    .col(
+                        ColumnDef::new(Share::Content)
+                            .array(ColumnType::String(None))
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Share::Password).string().null())
                     .col(ColumnDef::new(Share::UserId).integer().not_null())
-                    .col(ColumnDef::new(Share::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
+                    .col(
+                        ColumnDef::new(Share::CreateTime)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
                     .col(ColumnDef::new(Share::ValidTime).timestamp().not_null())
                     .to_owned(),
             )

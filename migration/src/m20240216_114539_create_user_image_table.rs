@@ -22,8 +22,18 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(UserImage::UserId).integer().not_null())
                     .col(ColumnDef::new(UserImage::FileName).string().not_null())
                     .col(ColumnDef::new(UserImage::FolderId).integer().not_null())
-                    .col(ColumnDef::new(UserImage::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
-                    .col(ColumnDef::new(UserImage::UpdateTime).timestamp().default(Expr::current_timestamp()).not_null())
+                    .col(
+                        ColumnDef::new(UserImage::CreateTime)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(UserImage::UpdateTime)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await
@@ -45,5 +55,5 @@ enum UserImage {
     FileName,
     FolderId,
     CreateTime,
-    UpdateTime
+    UpdateTime,
 }

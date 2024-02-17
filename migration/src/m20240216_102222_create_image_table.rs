@@ -14,7 +14,12 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Image::Id).string().not_null().primary_key())
                     .col(ColumnDef::new(Image::Used).integer().default(0).not_null())
                     .col(ColumnDef::new(Image::Size).integer().not_null())
-                    .col(ColumnDef::new(Image::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
+                    .col(
+                        ColumnDef::new(Image::CreateTime)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await
@@ -33,5 +38,5 @@ enum Image {
     Id,
     Used,
     Size,
-    CreateTime
+    CreateTime,
 }
