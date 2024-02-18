@@ -19,8 +19,8 @@ impl MigrationTrait for Migration {
                             .primary_key(),
                     )
                     .col(ColumnDef::new(Folder::Name).string().not_null())
-                    .col(ColumnDef::new(Folder::Parent).integer().not_null())
-                    .col(ColumnDef::new(Folder::Child).array(ColumnType::Integer).not_null())
+                    .col(ColumnDef::new(Folder::Parent).integer().null())
+                    .col(ColumnDef::new(Folder::Child).array(ColumnType::Integer).null())
                     .col(ColumnDef::new(Folder::UserId).integer().not_null())
                     .col(ColumnDef::new(Folder::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
                     .col(ColumnDef::new(Folder::UpdateTime).timestamp().default(Expr::current_timestamp()).not_null())
