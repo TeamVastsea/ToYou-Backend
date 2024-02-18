@@ -1,5 +1,5 @@
 [package]
-name = "just-backend"
+name = "toyou-backend"
 version = "0.1.0"
 edition = "2021"
 
@@ -24,6 +24,7 @@ tokio = { version = "1.36.0", features = ["full"] }
 chrono = "0.4.34"
 moka = { version = "0.12.5", features = ["future"] }
 lazy_static = "1.4.0"
+lazy-regex = "3.1.0"
 
 #serde
 serde = { version = "1.0.196", features = ["derive"] }
@@ -41,5 +42,4 @@ rand = "0.8.5"
 #database
 sea-orm = { version = "0.12", features = ["macros", "sqlx-postgres", "runtime-tokio-rustls"] }
 migration = { path = "migration" }
-lazy-regex = "3.1.0"
 
