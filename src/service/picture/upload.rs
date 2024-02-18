@@ -53,8 +53,8 @@ pub async fn post_picture(
                 resource_type = Some(file_type.clone().unwrap());
             }
             "token" => {
-                let code = String::from_utf8(data.to_vec()).unwrap();
-                user_id = Some(0);
+                // let code = String::from_utf8(data.to_vec()).unwrap();
+                // user_id = Some(0);
                 // let (ok, id) = get_pid(code.clone()).await;
                 // if ok {
                 //     pid = Some(id);

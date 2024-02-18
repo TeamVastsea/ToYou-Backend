@@ -23,6 +23,8 @@ use migration::{Migrator, MigratorTrait};
 
 use crate::config::{rename_log, Config};
 use crate::service::picture::upload::post_picture;
+use crate::service::user::phone::{get_sms, get_user_phone};
+use crate::service::user::register::register_user;
 
 mod config;
 mod model;
@@ -81,6 +83,9 @@ async fn main() {
     });
 
     let app = Router::new()
+        .route("/user", post(register_user))
+        .route("/user/phone/:id", get(get_user_phone))
+        .route("/user/code/phone", get(get_sms))
         .route("/picture", post(post_picture))
         .route("/ping", get(ping))
         .with_state(app_state)
