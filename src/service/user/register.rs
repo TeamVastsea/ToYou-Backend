@@ -13,12 +13,12 @@ use crate::service::user::phone::verify_sms;
 
 pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request): Json<RegisterRequest>) -> Result<String, (StatusCode, String)> {
     let phone = request.phone;
-    if !verify_sms(request.code, &phone).await {
-        return Err((StatusCode::BAD_REQUEST, "Invalid code.".to_string()));
-    }
 
     if !is_valid_password(&request.password) {
         return Err((StatusCode::BAD_REQUEST, "Invalid password.".to_string()));
+    }
+    if !verify_sms(request.code, &phone).await {
+        return Err((StatusCode::BAD_REQUEST, "Invalid code.".to_string()));
     }
 
     let user_root = crate::model::folder::ActiveModel {
