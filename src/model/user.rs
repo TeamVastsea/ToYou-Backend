@@ -15,6 +15,7 @@ pub struct Model {
     pub email: Option<String>,
     pub available: bool,
     pub level: Vec<String>,
+    pub root: i32,
     pub create_time: DateTime,
     pub update_time: DateTime,
 }

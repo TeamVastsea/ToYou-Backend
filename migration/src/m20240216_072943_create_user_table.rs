@@ -19,7 +19,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(User::Email).string().null())
                     .col(ColumnDef::new(User::Available).boolean().default(true).not_null())
                     .col(ColumnDef::new(User::Level).array(ColumnType::String(None)).not_null())
-                    .col(ColumnDef::new(User::Root).integer().default(false).not_null())
+                    .col(ColumnDef::new(User::Root).integer().not_null())
                     .col(ColumnDef::new(User::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
                     .col(ColumnDef::new(User::UpdateTime).timestamp().default(Expr::current_timestamp()).not_null())
                     .to_owned(),

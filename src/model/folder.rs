@@ -8,8 +8,8 @@ pub struct Model {
     #[sea_orm(primary_key)]
     pub id: i32,
     pub name: String,
-    pub parent: i32,
-    pub child: Vec<i32>,
+    pub parent: Option<i32>,
+    pub child: Option<Vec<i32>>,
     pub user_id: i32,
     pub create_time: DateTime,
     pub update_time: DateTime,

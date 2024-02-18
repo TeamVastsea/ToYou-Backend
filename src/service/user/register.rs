@@ -4,7 +4,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use lazy_regex::regex;
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, NotSet};
+use sea_orm::{ActiveModelTrait, IntoActiveModel, NotSet};
 use serde::{Deserialize, Serialize};
 use crate::ServerState;
 use crate::service::user::password::generate_password_hash;
@@ -21,6 +21,17 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
         return Err((StatusCode::BAD_REQUEST, "Invalid password.".to_string()));
     }
 
+    let user_root = crate::model::folder::ActiveModel {
+        id: NotSet,
+        name: Set("".to_string()),
+        parent: Set(None),
+        child: Set(None),
+        user_id: Set(0),
+        create_time: NotSet,
+        update_time: NotSet,
+    };
+    let user_root = user_root.insert(&state.db).await.unwrap();
+
     let user = crate::model::user::ActiveModel {
         id: NotSet,
         username: Set(request.username),
@@ -29,11 +40,15 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
         email: Set(None),
         available: NotSet,
         level: Set(Vec::new()),
+        root: Set(user_root.id),
         create_time: NotSet,
         update_time: NotSet,
     };
 
-    user.insert(&state.db).await.unwrap();
+    let user = user.insert(&state.db).await.unwrap();
+    let mut user_root = user_root.into_active_model();
+    user_root.user_id = Set(user.id);
+    user_root.update(&state.db).await.unwrap();
 
     Ok("".to_string())
 }
