@@ -22,8 +22,18 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Folder::Parent).integer().null())
                     .col(ColumnDef::new(Folder::Child).array(ColumnType::Integer).null())
                     .col(ColumnDef::new(Folder::UserId).integer().not_null())
-                    .col(ColumnDef::new(Folder::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
-                    .col(ColumnDef::new(Folder::UpdateTime).timestamp().default(Expr::current_timestamp()).not_null())
+                    .col(
+                        ColumnDef::new(Folder::CreateTime)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
+                    .col(
+                        ColumnDef::new(Folder::UpdateTime)
+                            .timestamp()
+                            .default(Expr::current_timestamp())
+                            .not_null(),
+                    )
                     .to_owned(),
             )
             .await
@@ -45,5 +55,5 @@ enum Folder {
     Child,
     UserId,
     CreateTime,
-    UpdateTime
+    UpdateTime,
 }
