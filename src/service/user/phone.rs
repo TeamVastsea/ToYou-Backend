@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Duration;
+
 use axum::extract::{Path, Query, State};
 use axum::http::StatusCode;
 use lazy_regex::regex;
@@ -9,10 +10,11 @@ use moka::future::Cache;
 use rand::Rng;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use tracing::log::debug;
+
 use crate::model::prelude::User;
 use crate::ServerState;
 
-lazy_static!{
+lazy_static! {
     static ref CODE_CACHE: Cache<i32, String> = Cache::builder()
         .time_to_live(Duration::from_secs(60 * 5))
         .build();
@@ -23,8 +25,9 @@ lazy_static!{
 }
 
 pub async fn get_user_phone(State(state): State<Arc<ServerState>>, Path(phone): Path<String>) -> String {
+    debug!("Get user phone: {}", phone);
     let res = User::find().filter(crate::model::user::Column::Phone.eq(phone)).all(&state.db).await.unwrap();
-    res.is_empty().to_string()
+    (!res.is_empty()).to_string()
 }
 
 pub async fn get_sms(Query(params): Query<HashMap<String, String>>) -> Result<String, (StatusCode, String)> {

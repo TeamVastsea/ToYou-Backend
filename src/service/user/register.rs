@@ -1,14 +1,15 @@
 use std::sync::Arc;
+
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::Json;
 use lazy_regex::regex;
-use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, IntoActiveModel, NotSet};
-use serde::{Deserialize, Serialize};
+use sea_orm::ActiveValue::Set;
+use serde::Deserialize;
+
 use crate::ServerState;
 use crate::service::user::password::generate_password_hash;
-
 use crate::service::user::phone::verify_sms;
 
 pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request): Json<RegisterRequest>) -> Result<String, (StatusCode, String)> {
@@ -17,7 +18,7 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
     if !is_valid_password(&request.password) {
         return Err((StatusCode::BAD_REQUEST, "Invalid password.".to_string()));
     }
-    if !verify_sms(request.code, &phone).await {
+    if !verify_sms(request.code.parse().unwrap(), &phone).await {
         return Err((StatusCode::BAD_REQUEST, "Invalid code.".to_string()));
     }
 
@@ -50,7 +51,7 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
     user_root.user_id = Set(user.id);
     user_root.update(&state.db).await.unwrap();
 
-    Ok("".to_string())
+    Ok("success".to_string())
 }
 
 //Since regex crate does not support lookbehind, we have to use a workaround to check the password.
@@ -88,7 +89,7 @@ pub struct RegisterRequest {
     password: String,
     username: String,
     phone: String,
-    code: i32,
+    code: String,
 }
 
 #[test]
