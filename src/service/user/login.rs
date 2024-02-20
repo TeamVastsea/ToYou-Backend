@@ -18,11 +18,10 @@ pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMa
     println!("{headers:?}");
     if headers.contains_key("token") {
         println!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
-        let token = headers.get("token").unwrap().to_str().unwrap();
-        let user = login_by_token(state.db.clone(), token).await?;
+        let user = login_by_token(&state.db, headers).await.unwrap();
         let headers = HeaderMap::new();
 
-        return Ok((headers, user));
+        return Ok((headers, serde_json::to_string(&user).unwrap()));
     }
 
     let user = User::find().filter(crate::model::user::Column::Phone.eq(request.account)).one(&state.db).await.unwrap();
@@ -51,14 +50,14 @@ pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMa
     Ok((headers, serde_json::to_string(&user).unwrap()))
 }
 
-async fn login_by_token(db: DatabaseConnection, token: &str) -> Result<String, (StatusCode, String)> {
-    let uid = TOKEN_CACHE.get(token).await.unwrap();
-    let user = User::find().filter(crate::model::user::Column::Id.eq(uid)).one(&db).await.unwrap();
-    if user.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
+pub async fn login_by_token(db: &DatabaseConnection, header: HeaderMap) -> Option<crate::model::user::Model> {
+    if !header.contains_key("token") { return None; }
+    let token = header.get("token").unwrap().to_str().unwrap();
+    let uid = TOKEN_CACHE.get(token).await;
+    if uid.is_none() {
+        return None;
     }
-    let user = user.unwrap();
-    Ok(serde_json::to_string(&user).unwrap())
+    User::find().filter(crate::model::user::Column::Id.eq(uid.unwrap())).one(db).await.unwrap()
 }
 
 #[serde_inline_default]

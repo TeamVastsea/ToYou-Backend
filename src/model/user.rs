@@ -10,12 +10,10 @@ pub struct Model {
     pub id: i32,
     #[sea_orm(unique)]
     pub username: String,
-    #[serde(skip_serializing)]
     pub password: String,
     #[sea_orm(unique)]
     pub phone: String,
     pub email: Option<String>,
-    #[serde(skip_serializing)]
     pub available: bool,
     pub level: Vec<String>,
     pub root: i32,
