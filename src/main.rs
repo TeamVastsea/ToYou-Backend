@@ -9,6 +9,7 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde_json::json;
 use std::sync::Arc;
 use tower_http::catch_panic::CatchPanicLayer;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::log::LevelFilter;
 use tracing::{debug, info, warn, Span};
@@ -92,6 +93,7 @@ async fn main() {
         .route("/ping", get(ping))
         .with_state(app_state)
         .layer(trace_layer)
+        .layer(CorsLayer::new().allow_headers(Any).allow_origin(Any))
         .layer(CatchPanicLayer::new())
         .layer(DefaultBodyLimit::max(
             config.connection.max_body_size * 1024 * 1024,

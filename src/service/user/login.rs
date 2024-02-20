@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::extract::{Query, State};
-use axum::http::{header, HeaderMap, StatusCode};
+use axum::http::{HeaderMap, StatusCode};
 use axum::response::IntoResponse;
 use rand::Rng;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
@@ -9,17 +9,44 @@ use serde::Deserialize;
 use serde_inline_default::serde_inline_default;
 use tracing::log::debug;
 
-use crate::model::prelude::User;
+use crate::model::prelude::{Folder, User};
+use crate::model::user::UserExtended;
 use crate::ServerState;
 use crate::service::TOKEN_CACHE;
+use crate::service::user::level::{LevelInfo};
 use crate::service::user::password::verify_password;
 
 pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMap, Query(request): Query<LoginRequest>) -> impl IntoResponse {
-    println!("{headers:?}");
     if headers.contains_key("token") {
-        println!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
-        let user = login_by_token(&state.db, headers).await.unwrap();
+        debug!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
+        let user = login_by_token(&state.db, headers).await;
+        if user.is_none() {
+            return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
+        }
+        let user = user.unwrap();
         let headers = HeaderMap::new();
+
+        if request.extended { //extended information includes the user's level and used space
+            let levels: Vec<Vec<i64>> = user.level.iter().map(|level| serde_json::from_str(level).unwrap()).collect();
+            let levels: Vec<LevelInfo> = levels.into_iter().map(|level| LevelInfo::try_from(level).unwrap()).collect();
+            let max_level = levels.into_iter().max().unwrap_or_else(|| LevelInfo::get_free_level());
+
+            let root_size = Folder::find_by_id(user.root).one(&state.db).await.unwrap().unwrap().size;
+            let user = UserExtended {
+                id: user.id,
+                username: user.username,
+                phone: user.phone,
+                email: user.email,
+                available: user.available,
+                level: max_level,
+                root: user.root,
+                used_space: root_size,
+                create_time: user.create_time,
+                update_time: user.update_time,
+            };
+
+            return Ok((headers, serde_json::to_string(&user).unwrap()));
+        }
 
         return Ok((headers, serde_json::to_string(&user).unwrap()));
     }
@@ -47,6 +74,29 @@ pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMa
     let mut headers = HeaderMap::new();
     headers.insert("token", token.parse().unwrap());
 
+
+    if request.extended { //extended information includes the user's level and used space
+        let levels: Vec<Vec<i64>> = user.level.iter().map(|level| serde_json::from_str(level).unwrap()).collect();
+        let levels: Vec<LevelInfo> = levels.into_iter().map(|level| LevelInfo::try_from(level).unwrap()).collect();
+        let max_level = levels.into_iter().max().unwrap_or_else(|| LevelInfo::get_free_level());
+
+        let root_size = Folder::find_by_id(user.root).one(&state.db).await.unwrap().unwrap().size;
+        let user = UserExtended {
+            id: user.id,
+            username: user.username,
+            phone: user.phone,
+            email: user.email,
+            available: user.available,
+            level: max_level,
+            root: user.root,
+            used_space: root_size,
+            create_time: user.create_time,
+            update_time: user.update_time,
+        };
+
+        return Ok((headers, serde_json::to_string(&user).unwrap()));
+    }
+
     Ok((headers, serde_json::to_string(&user).unwrap()))
 }
 
@@ -67,4 +117,6 @@ pub struct LoginRequest {
     account: String,
     #[serde_inline_default(String::from(""))]
     password: String,
+    #[serde_inline_default(false)]
+    extended: bool,
 }

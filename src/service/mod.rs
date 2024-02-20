@@ -1,8 +1,7 @@
 use std::time::Duration;
-use lazy_static::lazy_static;
 
+use lazy_static::lazy_static;
 use moka::future::Cache;
-use serde::{Deserialize, Serialize};
 
 pub mod picture;
 pub mod user;
