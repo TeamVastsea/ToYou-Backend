@@ -1,7 +1,10 @@
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use base64::Engine;
 use std::path::PathBuf;
+use image::codecs::jpeg::JpegEncoder;
+use image::DynamicImage;
 use tokio::fs::try_exists;
+use image::io::Reader as ImageReader;
 
 /// Save a file to disk and generate the id of the file
 ///
@@ -42,4 +45,43 @@ pub async fn save_file(file_content: impl AsRef<[u8]>) -> Option<String> {
         .unwrap();
 
     Some(id)
+}
+
+
+/// Read a file from disk
+/// 
+/// # Arguments 
+/// 
+/// * `file_id`: The id of the file
+/// 
+/// returns: Option<DynamicImage>: Some(DynamicImage) if the file is read successfully, None if not exist or format not recognized
+///   
+/// # Examples 
+/// 
+/// ```
+/// let file = read_image("test").unwrap();
+/// ```
+pub async fn read_image(file_id: &str) -> Option<DynamicImage> {
+    let mut path = PathBuf::from("./files");
+    path.push((&file_id[0..2]).to_string().to_ascii_lowercase());
+    path.push((&file_id).to_string());
+
+    if !try_exists(&path).await.unwrap() {
+        return None;
+    }
+    
+    let file = ImageReader::open(path);
+    if file.is_err() {
+        return None;
+    }
+    let file = file.unwrap().with_guessed_format();
+    if file.is_err() {
+        return None;
+    }
+    let file = file.unwrap().decode();
+    if file.is_err() { 
+        return None;
+    }
+    
+    Some(file.unwrap())
 }

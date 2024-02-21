@@ -5,6 +5,7 @@ use moka::future::Cache;
 
 pub mod picture;
 pub mod user;
+pub mod folder;
 
 lazy_static!{
     static ref TOKEN_CACHE: Cache<String, i32> = Cache::builder()

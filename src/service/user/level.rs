@@ -48,6 +48,7 @@ impl Ord for LevelInfo {
     }
 }
 
+
 pub fn remove_invalid_levels(levels: Vec<LevelInfo>) -> Vec<LevelInfo> {
     levels.into_iter().filter(|level| level.is_valid()).collect()
 }
