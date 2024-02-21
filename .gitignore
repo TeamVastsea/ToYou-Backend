@@ -2,6 +2,7 @@ HELP.md
 
 # cargo
 target/
+files/
 
 ### VS Code ###
 .vscode/

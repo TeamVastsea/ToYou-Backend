@@ -1,8 +1,10 @@
 use std::cmp::max;
-use image::{DynamicImage, GenericImageView, ImageEncoder};
 use std::io::Error;
+
+use image::{DynamicImage, GenericImageView};
 use image::codecs::jpeg::JpegEncoder;
 use image::imageops::overlay;
+
 use crate::service::picture::file::read_image;
 
 pub struct ImageFile {

@@ -1,10 +1,10 @@
-use base64::prelude::BASE64_URL_SAFE_NO_PAD;
-use base64::Engine;
 use std::path::PathBuf;
-use image::codecs::jpeg::JpegEncoder;
+
+use base64::Engine;
+use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use image::DynamicImage;
-use tokio::fs::try_exists;
 use image::io::Reader as ImageReader;
+use tokio::fs::try_exists;
 
 /// Save a file to disk and generate the id of the file
 ///
