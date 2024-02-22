@@ -23,7 +23,8 @@ use tracing_subscriber::{fmt, EnvFilter, Registry};
 use migration::{Migrator, MigratorTrait};
 
 use crate::config::{rename_log, Config};
-use crate::service::picture::get::list_picture;
+use crate::service::folder::create::create_folder;
+use crate::service::picture::get::{get_picture_preview, list_picture};
 use crate::service::picture::upload::post_picture;
 use crate::service::user::login::login_user;
 use crate::service::user::phone::{get_sms, get_user_phone};
@@ -90,10 +91,12 @@ async fn main() {
         .route("/user/phone/:id", get(get_user_phone))
         .route("/user/code/phone", get(get_sms))
         .route("/picture", post(post_picture).get(list_picture))
+        .route("/picture/preview", get(get_picture_preview))
+        .route("/folder", post(create_folder))
         .route("/ping", get(ping))
         .with_state(app_state)
         .layer(trace_layer)
-        .layer(CorsLayer::new().allow_headers(Any).allow_origin(Any))
+        .layer(CorsLayer::permissive())
         .layer(CatchPanicLayer::new())
         .layer(DefaultBodyLimit::max(
             config.connection.max_body_size * 1024 * 1024,

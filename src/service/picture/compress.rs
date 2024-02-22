@@ -1,7 +1,7 @@
 use std::cmp::max;
 use std::io::Error;
 
-use image::{DynamicImage, GenericImageView};
+use image::{ColorType, DynamicImage, GenericImageView};
 use image::codecs::jpeg::JpegEncoder;
 use image::imageops::overlay;
 
@@ -52,7 +52,7 @@ impl ImageFile {
     
     pub fn encode_preview(&self) -> Result<Vec<u8>, Error> {
         let mut buffer = Vec::new();
-        JpegEncoder::new_with_quality(&mut buffer, 50).encode(self.file.to_rgba8().as_raw(), self.file.width(), self.file.height(), self.file.color()).unwrap();
+        JpegEncoder::new_with_quality(&mut buffer, 80).encode(self.file.to_rgba8().as_raw(), self.file.width(), self.file.height(), ColorType::Rgba8).unwrap();
         Ok(buffer)
     }
 }

@@ -36,7 +36,7 @@ pub async fn list_picture(State(state): State<Arc<ServerState>>, header_map: Hea
     Ok(Json(response))
 }
 
-pub async fn picture_get_preview(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<PictureGetPreviewRequest>)
+pub async fn get_picture_preview(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<PictureGetPreviewRequest>)
                                  -> impl IntoResponse {
     let user = login_by_token(&state.db, header_map).await;
     if user.is_none() {
@@ -49,7 +49,9 @@ pub async fn picture_get_preview(State(state): State<Arc<ServerState>>, header_m
     //         let raw: Vec<i64> = serde_json::from_str(&e).unwrap();
     //         LevelInfo::try_from(raw).unwrap_or_else(|e| LevelInfo::get_free_level())
     //     }).max().unwrap_or_else(|| LevelInfo::get_free_level());
-    //TODO: limit share types according to the user level
+    // let max_level = level.get_max_share_level();
+    // let share_level = min(max_level as u8, query.mode);
+    // TODO: implement share level
 
     let picture = UserImage::find()
         .filter(crate::model::user_image::Column::UserId.eq(user.id))
@@ -66,6 +68,7 @@ pub async fn picture_get_preview(State(state): State<Arc<ServerState>>, header_m
     Ok(picture.encode_preview().unwrap())
 }
 
+#[derive(Deserialize)]
 pub struct PictureGetPreviewRequest {
     id: i64,
     mode: u8,

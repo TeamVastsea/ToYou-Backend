@@ -16,6 +16,15 @@ impl LevelInfo {
         self.start < now && self.end > now
     }
     
+    pub fn get_max_share_level(&self) -> ShareLevel {
+        match self.level { 
+            Level::Free => ShareLevel::Watermarked,
+            Level::Started => ShareLevel::Compressed,
+            Level::Advanced => ShareLevel::Compressed,
+            Level::Professional => ShareLevel::Original,
+        }
+    }
+    
     pub fn get_free_level() -> Self {
         LevelInfo {
             level: Level::Free,
@@ -73,6 +82,13 @@ impl From<u8> for Level {
     }
 }
 
+#[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
+pub enum ShareLevel {
+    Original = 0,
+    Compressed,
+    Watermarked,
+}
+
 
 impl TryFrom<Vec<i64>> for LevelInfo {
     type Error = std::io::Error;
@@ -91,6 +107,20 @@ impl TryFrom<Vec<i64>> for LevelInfo {
             end: Utc.timestamp_opt(value[2], 0).unwrap(),
         })
     }
+}
+
+impl TryFrom<i64> for ShareLevel {
+    type Error = std::io::Error;
+
+    fn try_from(value: i64) -> Result<Self, Self::Error> {
+        match value {
+            0 => Ok(ShareLevel::Original),
+            1 => Ok(ShareLevel::Compressed),
+            2 => Ok(ShareLevel::Watermarked),
+            _ => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid share level")),
+        }
+    }
+    
 }
 
 impl From<LevelInfo> for Vec<i64> {
