@@ -90,7 +90,6 @@ pub async fn post_picture(
     // }
 
     let id = save_file(&state.db, &file).await;
-    
 
     let user_image = crate::model::user_image::ActiveModel {
         id: NotSet,
@@ -101,8 +100,8 @@ pub async fn post_picture(
         create_time: NotSet,
         update_time: NotSet,
     };
-    user_image.insert(&state.db).await.unwrap();
-    
+    let user_image = user_image.insert(&state.db).await.unwrap();
+
     let size = file.len() as f64 / 1024.0; // KB
 
     // ----------------------     ------------------------------
@@ -112,20 +111,20 @@ pub async fn post_picture(
     // ----------------------     ------------------------------
     let (mut parent, mut depth) = add_size_to_folder(&state.db, dir, size).await;
 
-    while let Some(a) = parent{
+    while let Some(a) = parent {
         let (new_parent, new_depth) = add_size_to_folder(&state.db, a, size).await;
-        
-        if new_depth != depth - 1 { 
+
+        if new_depth != depth - 1 {
             error!("Invalid depth: {} in {} (indexed from depth {})", new_depth, a, depth);
             add_size_to_folder(&state.db, user.root, size).await;
             break;
         }
-        
+
         parent = new_parent;
         depth = new_depth;
     }
 
-    Ok(id)
+    Ok(user_image.id.to_string())
 }
 
 async fn add_size_to_folder(db: &sea_orm::DatabaseConnection, folder_id: i32, size: f64) -> (Option<i32>, i32) {
