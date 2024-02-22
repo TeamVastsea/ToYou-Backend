@@ -4,9 +4,12 @@ use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use image::DynamicImage;
 use image::io::Reader as ImageReader;
+use sea_orm::ActiveValue::Set;
+use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, NotSet};
 use tokio::fs::try_exists;
+use crate::model::prelude::Image;
 
-/// Save a file to disk and generate the id of the file
+/// Writw a file to disk and generate the id of the file
 ///
 /// # Arguments
 ///
@@ -21,7 +24,7 @@ use tokio::fs::try_exists;
 /// let file_id = save_file(file_content).await;
 /// println!("{file_id:?}");
 /// ```
-pub async fn save_file(file_content: impl AsRef<[u8]>) -> Option<String> {
+async fn write_file(file_content: impl AsRef<[u8]>) -> Option<String> {
     let mut hasher = blake3::Hasher::new();
     hasher.update(file_content.as_ref());
     hasher.update(&file_content.as_ref().len().to_le_bytes());
@@ -84,4 +87,44 @@ pub async fn read_image(file_id: &str) -> Option<DynamicImage> {
     }
     
     Some(file.unwrap())
+}
+
+/// Save a file to disk and update the database
+/// 
+/// # Arguments 
+/// 
+/// * `db`: The database connection
+/// * `file_content`: The content of file
+/// 
+/// returns: String:  the id of the file
+/// 
+/// # Examples 
+/// 
+/// ```
+/// let file_content = fs::read("path/to/file").await.unwrap();
+/// let file_id = save_file(db, file_content).await;
+/// ```
+pub async fn save_file(db: &DatabaseConnection, file_content: impl AsRef<[u8]>) -> String {
+    let id = write_file(&file_content).await.unwrap();
+
+    if Image::find_by_id(&id).one(db).await.unwrap().is_none() {
+        let image = crate::model::image::ActiveModel {
+            id: Set(id.clone()),
+            used: Set(1),
+            size: Set((&file_content.as_ref().len() / 1024usize) as i32),
+            create_time: NotSet,
+        };
+        image.insert(db).await.unwrap();
+    } else {
+        let image = Image::find_by_id(&id)
+            .one(db)
+            .await
+            .unwrap()
+            .unwrap();
+        let mut image = image.into_active_model();
+        image.used = Set(image.used.unwrap() + 1);
+        image.save(db).await.unwrap();
+    }
+    
+    return id;
 }
