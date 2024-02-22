@@ -136,6 +136,7 @@ pub async fn post_picture(
     active_folder.save(&state.db).await.unwrap();
 
     let mut parent = folder.parent;
+    let mut depth = folder.depth;
 
     while let Some(a) = parent {
         let folder = Folder::find_by_id(a)
@@ -143,11 +144,17 @@ pub async fn post_picture(
             .await
             .unwrap()
             .unwrap();
-        let mut active_folder = folder.clone().into_active_model();
-        active_folder.size = Set(active_folder.size.unwrap() + (file.len() as f64 / 1024f64)); // KB
-        active_folder.save(&state.db).await.unwrap();
+        if folder.depth < depth && folder.depth >= 0{ // prevent infinite loop
+            let mut active_folder = folder.clone().into_active_model();
+            active_folder.size = Set(active_folder.size.unwrap() + (file.len() as f64 / 1024f64)); // KB
+            active_folder.save(&state.db).await.unwrap();
 
-        parent = folder.parent;
+            depth = folder.depth;
+            parent = folder.parent;
+        } else { 
+            break;
+        }
+
     }
 
     Ok(id)

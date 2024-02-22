@@ -13,6 +13,7 @@ pub struct Model {
     pub user_id: i32,
     #[sea_orm(column_type = "Double")]
     pub size: f64,
+    pub depth: i32,
     pub create_time: DateTime,
     pub update_time: DateTime,
 }

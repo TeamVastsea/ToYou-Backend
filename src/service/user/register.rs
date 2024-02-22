@@ -29,6 +29,7 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
         child: Set(None),
         user_id: Set(0),
         size: Set(0.0),
+        depth: NotSet,
         create_time: NotSet,
         update_time: NotSet,
     };
