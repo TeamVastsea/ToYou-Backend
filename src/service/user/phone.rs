@@ -22,6 +22,8 @@ lazy_static! {
     static ref HISTORY_CACHE: Cache<String, ()> = Cache::builder()
         .time_to_live(Duration::from_secs(60))
         .build();
+    
+    static ref SMS_CLIENT: reqwest::Client = reqwest::Client::new();
 }
 
 pub async fn get_user_phone(State(state): State<Arc<ServerState>>, Path(phone): Path<String>) -> String {
@@ -30,7 +32,7 @@ pub async fn get_user_phone(State(state): State<Arc<ServerState>>, Path(phone): 
     (!res.is_empty()).to_string()
 }
 
-pub async fn get_sms(Query(params): Query<HashMap<String, String>>) -> Result<String, (StatusCode, String)> {
+pub async fn get_sms(State(state): State<Arc<ServerState>>, Query(params): Query<HashMap<String, String>>) -> Result<String, (StatusCode, String)> {
     if !params.contains_key("phone") {
         return Err((StatusCode::BAD_REQUEST, "Invalid phone.".to_string()));
     }
@@ -45,6 +47,19 @@ pub async fn get_sms(Query(params): Query<HashMap<String, String>>) -> Result<St
     let code = rand::thread_rng().gen_range(100000..999999);
     let phone = params.get("phone").unwrap();
     CODE_CACHE.insert(code, phone.clone()).await;
+
+    lsys_lib_sms::AliSms::branch_send(
+        SMS_CLIENT.clone(),
+        "",
+        &state.config.aliyun.app_key,
+        &state.config.aliyun.app_secret,
+        &state.config.aliyun.sign_name,
+        &state.config.aliyun.template_code,
+        (r#"{"code":"#.to_string() + &code.to_string() + r#"}"#).as_str(),
+        &[phone],
+        "",
+        "",
+    ).await.unwrap();
 
     debug!("Send SMS to {}: {}", phone, code);
     HISTORY_CACHE.insert(phone.clone(), ()).await;

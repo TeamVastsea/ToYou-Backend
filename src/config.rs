@@ -9,10 +9,12 @@ use tokio::fs;
 #[serde_inline_default]
 #[derive(Serialize, Deserialize, Clone)]
 pub struct Config {
-    #[serde(default = "generate_connection_setting")]
-    pub connection: ConnectionConfig,
     #[serde_inline_default(String::from("info"))]
     pub trace_level: String,
+    #[serde(default = "generate_connection_setting")]
+    pub connection: ConnectionConfig,
+    #[serde(default = "generate_aliyun_setting")]
+    pub aliyun: AliyunConfig,
 }
 
 #[serde_inline_default]
@@ -32,6 +34,19 @@ pub struct ConnectionConfig {
     pub max_body_size: usize,
 }
 
+#[serde_inline_default]
+#[derive(Serialize, Deserialize, Clone)]
+pub struct AliyunConfig {
+    #[serde_inline_default(String::from("LTAI5tD8ZcM52sTr3ubxxxxx"))]
+    pub app_key: String,
+    #[serde_inline_default(String::from("alCw4PXzoPM6KFbAgaM1UGC0O2xxxx"))]
+    pub app_secret: String,
+    #[serde_inline_default(String::from("SMS_xxxxxxxx"))]
+    pub template_code: String,
+    #[serde_inline_default(String::from("ToYou"))]
+    pub sign_name: String,
+}
+
 fn generate_connection_setting() -> ConnectionConfig {
     ConnectionConfig {
         server_addr: "0.0.0.0:7890".to_string(),
@@ -40,6 +55,15 @@ fn generate_connection_setting() -> ConnectionConfig {
         ssl_cert: "./cert.crt".to_string(),
         ssl_key: "./private.key".to_string(),
         max_body_size: 2,
+    }
+}
+
+fn generate_aliyun_setting() -> AliyunConfig {
+    AliyunConfig {
+        app_key: "LTAI5tD8ZcM52sTr3ubxxxxx".to_string(),
+        app_secret: "alCw4PXzoPM6KFbAgaM1UGC0O2xxxx".to_string(),
+        template_code: "SMS_xxxxxxxx".to_string(),
+        sign_name: "ToYou".to_string(),
     }
 }
 
