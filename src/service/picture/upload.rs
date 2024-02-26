@@ -127,7 +127,7 @@ pub async fn post_picture(
     Ok(user_image.id.to_string())
 }
 
-async fn add_size_to_folder(db: &sea_orm::DatabaseConnection, folder_id: i32, size: f64) -> (Option<i32>, i32) {
+async fn add_size_to_folder(db: &sea_orm::DatabaseConnection, folder_id: i64, size: f64) -> (Option<i64>, i16) {
     let folder = Folder::find_by_id(folder_id)
         .one(db)
         .await

@@ -111,7 +111,7 @@ pub async fn save_file(db: &DatabaseConnection, file_content: impl AsRef<[u8]>) 
         let image = crate::model::image::ActiveModel {
             id: Set(id.clone()),
             used: Set(1),
-            size: Set((&file_content.as_ref().len() / 1024usize) as i32),
+            size: Set(file_content.as_ref().len() as f64 / 1024f64),
             create_time: NotSet,
         };
         image.insert(db).await.unwrap();

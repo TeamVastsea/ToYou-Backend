@@ -9,7 +9,8 @@ pub struct Model {
     pub id: Uuid,
     pub content: Vec<String>,
     pub password: Option<String>,
-    pub user_id: i32,
+    pub user_id: i64,
+    pub mode: i16,
     pub create_time: DateTime,
     pub valid_time: DateTime,
 }

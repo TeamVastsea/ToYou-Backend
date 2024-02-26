@@ -14,7 +14,8 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Share::Id).uuid().not_null().extra("DEFAULT gen_random_uuid()").primary_key())
                     .col(ColumnDef::new(Share::Content).array(ColumnType::String(None)).not_null())
                     .col(ColumnDef::new(Share::Password).string().null())
-                    .col(ColumnDef::new(Share::UserId).integer().not_null())
+                    .col(ColumnDef::new(Share::UserId).big_integer().not_null())
+                    .col(ColumnDef::new(Share::Mode).tiny_integer().not_null())
                     .col(ColumnDef::new(Share::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
                     .col(ColumnDef::new(Share::ValidTime).timestamp().not_null())
                     .to_owned(),
@@ -36,6 +37,7 @@ enum Share {
     Content,
     Password,
     UserId,
+    Mode,
     CreateTime,
     ValidTime,
 }

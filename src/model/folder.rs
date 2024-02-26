@@ -6,14 +6,14 @@ use sea_orm::entity::prelude::*;
 #[sea_orm(table_name = "folder")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: i64,
     pub name: String,
-    pub parent: Option<i32>,
-    pub child: Option<Vec<i32>>,
-    pub user_id: i32,
+    pub parent: Option<i64>,
+    pub child: Option<Vec<i64>>,
+    pub user_id: i64,
     #[sea_orm(column_type = "Double")]
     pub size: f64,
-    pub depth: i32,
+    pub depth: i16,
     pub create_time: DateTime,
     pub update_time: DateTime,
 }

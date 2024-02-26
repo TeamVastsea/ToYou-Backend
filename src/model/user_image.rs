@@ -7,11 +7,11 @@ use serde::Serialize;
 #[sea_orm(table_name = "user_image")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: i64,
     pub image_id: String,
-    pub user_id: i32,
+    pub user_id: i64,
     pub file_name: String,
-    pub folder_id: i32,
+    pub folder_id: i64,
     pub create_time: DateTime,
     pub update_time: DateTime,
 }

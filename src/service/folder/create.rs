@@ -48,6 +48,6 @@ pub async fn create_folder(State(state): State<Arc<ServerState>>, header_map: He
 
 #[derive(Deserialize)]
 pub struct CreateFolderRequest {
-    parent: i32,
+    parent: i64,
     name: String,
 }

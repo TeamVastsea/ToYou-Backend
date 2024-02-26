@@ -19,7 +19,7 @@ use crate::service::user::level::{LevelInfo};
 use crate::service::user::password::verify_password;
 
 lazy_static!{
-    static ref TOKEN_CACHE: Cache<String, i32> = Cache::builder()
+    static ref TOKEN_CACHE: Cache<String, i64> = Cache::builder()
         .time_to_idle(Duration::from_secs(60 * 60 * 24 * 7)) //if the key is not accessed for 7 days, it will be removed
         .build();
 }
