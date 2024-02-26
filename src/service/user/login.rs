@@ -1,8 +1,11 @@
 use std::sync::Arc;
+use std::time::Duration;
 
 use axum::extract::{Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::response::IntoResponse;
+use lazy_static::lazy_static;
+use moka::future::Cache;
 use rand::Rng;
 use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, QueryFilter};
 use serde::Deserialize;
@@ -12,9 +15,16 @@ use tracing::log::debug;
 use crate::model::prelude::{Folder, User};
 use crate::model::user::UserExtended;
 use crate::ServerState;
-use crate::service::TOKEN_CACHE;
 use crate::service::user::level::{LevelInfo};
 use crate::service::user::password::verify_password;
+
+lazy_static!{
+    static ref TOKEN_CACHE: Cache<String, i32> = Cache::builder()
+        .time_to_idle(Duration::from_secs(60 * 60 * 24 * 7)) //if the key is not accessed for 7 days, it will be removed
+        .build();
+}
+
+
 
 pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMap, Query(request): Query<LoginRequest>) -> impl IntoResponse {
     if headers.contains_key("token") {

@@ -1,28 +1,29 @@
+use std::sync::Arc;
+
+use axum::{http, Router};
 use axum::body::Body;
 use axum::extract::DefaultBodyLimit;
 use axum::http::Request;
 use axum::routing::{get, post};
-use axum::{http, Router};
 use axum_server::tls_rustls::RustlsConfig;
 use chrono::Local;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde_json::json;
-use std::sync::Arc;
 use tower_http::catch_panic::CatchPanicLayer;
-use tower_http::cors::{Any, CorsLayer};
+use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
+use tracing::{debug, info, Span, warn};
 use tracing::log::LevelFilter;
-use tracing::{debug, info, warn, Span};
 use tracing_appender::non_blocking;
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
+use tracing_subscriber::{EnvFilter, fmt, Registry};
 use tracing_subscriber::fmt::time::ChronoLocal;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
-use tracing_subscriber::{fmt, EnvFilter, Registry};
 
 use migration::{Migrator, MigratorTrait};
 
-use crate::config::{rename_log, Config};
+use crate::config::{Config, rename_log};
 use crate::service::folder::create::create_folder;
 use crate::service::picture::get::{get_picture_preview, list_picture};
 use crate::service::picture::upload::post_picture;
@@ -132,6 +133,5 @@ struct ServerState {
 async fn ping() -> String {
     json!(
         {"version": env!("CARGO_PKG_VERSION")}
-    )
-    .to_string()
+    ).to_string()
 }

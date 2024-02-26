@@ -16,7 +16,7 @@ use crate::ServerState;
 
 lazy_static! {
     static ref CODE_CACHE: Cache<i32, String> = Cache::builder()
-        .time_to_live(Duration::from_secs(60 * 5))
+        .time_to_live(Duration::from_secs(60 * 10))
         .build();
 
     static ref HISTORY_CACHE: Cache<String, ()> = Cache::builder()
@@ -45,7 +45,6 @@ pub async fn get_sms(State(state): State<Arc<ServerState>>, Query(params): Query
         return Err((StatusCode::TOO_MANY_REQUESTS, "Request too frequent.".to_string()));
     }
     let code = rand::thread_rng().gen_range(100000..999999);
-    let phone = params.get("phone").unwrap();
     CODE_CACHE.insert(code, phone.clone()).await;
 
     lsys_lib_sms::AliSms::branch_send(

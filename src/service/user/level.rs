@@ -144,9 +144,7 @@ fn test_level_serialize() {
     let level_array: Vec<i64> = serde_json::from_str(level_array_str).unwrap();
     let level_info2 = LevelInfo::try_from(level_array).unwrap();
 
-    println!("{}", serde_json::to_string(&level_info2).unwrap());
+    println!("level: {}", serde_json::to_string(&level_info2).unwrap());
 
-    assert_eq!(level_info2.level as u8, level_info.level as u8);
-    assert_eq!(level_info2.start, level_info.start);
-    assert_eq!(level_info2.end, level_info.end);
+    assert_eq!(level_info2, level_info);
 }

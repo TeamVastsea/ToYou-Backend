@@ -106,4 +106,5 @@ fn test_verify_password() {
     assert_eq!(is_valid_password("12348."), true);
     assert_eq!(is_valid_password("zsg.."), true);
     assert_eq!(is_valid_password("GHG.."), true);
+    println!("Password Verify Test passed");
 }
