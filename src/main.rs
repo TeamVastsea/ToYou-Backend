@@ -27,6 +27,7 @@ use crate::config::{Config, rename_log};
 use crate::service::folder::create::create_folder;
 use crate::service::picture::get::{get_picture_preview, list_picture};
 use crate::service::picture::upload::post_picture;
+use crate::service::share::create::create_share;
 use crate::service::user::login::login_user;
 use crate::service::user::phone::{get_sms, get_user_phone};
 use crate::service::user::register::register_user;
@@ -94,6 +95,7 @@ async fn main() {
         .route("/picture", post(post_picture).get(list_picture))
         .route("/picture/preview", get(get_picture_preview))
         .route("/folder", post(create_folder))
+        .route("/share", post(create_share))
         .route("/ping", get(ping))
         .with_state(app_state)
         .layer(trace_layer)

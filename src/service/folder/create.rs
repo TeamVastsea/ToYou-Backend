@@ -1,15 +1,18 @@
 use std::sync::Arc;
-use axum::extract::{Query, State};
+
+use axum::extract::State;
 use axum::http::{HeaderMap, StatusCode};
+use axum::Json;
 use axum::response::IntoResponse;
-use sea_orm::ActiveValue::Set;
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, NotSet};
+use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
+
 use crate::model::prelude::Folder;
 use crate::ServerState;
 use crate::service::user::login::login_by_token;
 
-pub async fn create_folder(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<CreateFolderRequest>) -> impl IntoResponse {
+pub async fn create_folder(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Json(query): Json<CreateFolderRequest>) -> impl IntoResponse {
     let user = login_by_token(&state.db, header_map).await;
     if user.is_none() { 
         return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
