@@ -109,10 +109,10 @@ impl TryFrom<Vec<i64>> for LevelInfo {
     }
 }
 
-impl TryFrom<i64> for ShareLevel {
+impl TryFrom<i16> for ShareLevel {
     type Error = std::io::Error;
 
-    fn try_from(value: i64) -> Result<Self, Self::Error> {
+    fn try_from(value: i16) -> Result<Self, Self::Error> {
         match value {
             0 => Ok(ShareLevel::Original),
             1 => Ok(ShareLevel::Compressed),

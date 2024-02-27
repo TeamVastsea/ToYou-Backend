@@ -1,7 +1,7 @@
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ContentType{
-    Folder(i32),
-    Picture(i32)
+    Folder(i64),
+    Picture(i64)
 }
 
 impl ContentType {

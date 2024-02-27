@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::extract::{Query, State};
-use axum::http::{HeaderMap, StatusCode};
+use axum::http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
 use axum::Json;
 use axum::response::IntoResponse;
 use sea_orm::{ColumnTrait, EntityTrait, Order, PaginatorTrait, QueryFilter, QueryOrder};
@@ -65,7 +65,13 @@ pub async fn get_picture_preview(State(state): State<Arc<ServerState>>, header_m
 
     let picture = ImageFile::new(&picture.unwrap().image_id).await.unwrap();
 
-    Ok(picture.encode_preview().unwrap())
+    let mut headers = HeaderMap::new();
+    headers.insert(
+        HeaderName::from_static("content-type"),
+        HeaderValue::from_str("image/png").unwrap(),
+    );
+
+    Ok((headers, picture.encode_preview().unwrap()))
 }
 
 #[derive(Deserialize)]

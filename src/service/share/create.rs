@@ -14,6 +14,7 @@ use crate::ServerState;
 use crate::service::share::content::ContentType;
 use crate::service::user::level::LevelInfo;
 use crate::service::user::login::login_by_token;
+use crate::service::user::password::generate_password_hash;
 
 pub async fn create_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Json(body): Json<CreateShareRequest>) -> impl IntoResponse {
     let user_id = login_by_token(&state.db, headers).await;
@@ -35,11 +36,15 @@ pub async fn create_share(State(state): State<Arc<ServerState>>, headers: Header
         }).max().unwrap_or_else(|| LevelInfo::get_free_level());
     let max_level = level.get_max_share_level();
     let share_level = min(max_level as u8, body.mode as u8);
+    let password = match body.password {
+        None => { None }
+        Some(a) => { Some(generate_password_hash(&a)) }
+    };
     
     let share = crate::model::share::ActiveModel {
         id: NotSet,
         content: Set(body.content),
-        password: Set(body.password),
+        password: Set(password),
         user_id: Set(user_id.id),
         mode: Set(share_level as i16),
         create_time: NotSet,
