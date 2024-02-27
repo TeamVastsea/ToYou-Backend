@@ -57,15 +57,16 @@ pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query)
             return Err((StatusCode::UNAUTHORIZED, "Invalid password.".to_string()));
         }
     }
-
-    if !share.content.contains(&query.content) {
-        return Err((StatusCode::BAD_REQUEST, "Invalid content.".to_string()));
-    }
+    
     let content_id = ContentType::try_from(query.content.as_str()).map_err(|_| { (StatusCode::BAD_REQUEST, "Invalid content.".to_string()) })?;
     let image = match content_id {
         ContentType::Folder(_) => { return Err((StatusCode::BAD_REQUEST, "This api is image only.".to_string())); }
         ContentType::Picture(id) => { UserImage::find_by_id(id).one(&state.db).await.unwrap().ok_or((StatusCode::NOT_FOUND, "Image not fount.".to_string()))? }
     };
+    
+    if !share.content.contains(&query.content) && !share.content.contains(&("f".to_string() + &image.folder_id.to_string())) {
+        return Err((StatusCode::BAD_REQUEST, "Invalid content.".to_string()));
+    }
 
     let mut file = ImageFile::new(image.image_id.as_str()).await.unwrap();
     file.compress_by_level(ShareLevel::try_from(share.mode).unwrap());
