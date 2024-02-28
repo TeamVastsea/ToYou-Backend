@@ -9,17 +9,18 @@ use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
 
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::user::password::generate_password_hash;
 use crate::service::user::phone::verify_sms;
 
-pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request): Json<RegisterRequest>) -> Result<String, (StatusCode, String)> {
+pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request): Json<RegisterRequest>) -> Result<String, ErrorMessage> {
     let phone = request.phone;
 
     if !is_valid_password(&request.password) {
-        return Err((StatusCode::BAD_REQUEST, "Invalid password.".to_string()));
+        return Err(ErrorMessage::InvalidParams("password".to_string()));
     }
     if !verify_sms(request.code.parse().unwrap(), &phone).await {
-        return Err((StatusCode::BAD_REQUEST, "Invalid code.".to_string()));
+        return Err(ErrorMessage::InvalidParams("code".to_string()));
     }
 
     let user_root = crate::model::folder::ActiveModel {

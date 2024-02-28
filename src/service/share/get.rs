@@ -11,6 +11,7 @@ use serde::Deserialize;
 use crate::model::prelude::{Share, User, UserImage};
 use crate::model::share::ShareInfo;
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::picture::compress::ImageFile;
 use crate::service::share::content::ContentType;
 use crate::service::user::level::ShareLevel;
@@ -48,24 +49,24 @@ pub async fn get_share_info(State(state): State<Arc<ServerState>>, Query(query):
     Ok(serde_json::to_string(&share_info).unwrap())
 }
 
-pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query): Query<GetShareImageRequest>) -> Result<(HeaderMap, Vec<u8>), (StatusCode, String)> {
+pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query): Query<GetShareImageRequest>) -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
     let id = Uuid::from_str(&query.id).map_err(|_| { (StatusCode::BAD_REQUEST, "Invalid id.".to_string()) })?;
     let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or((StatusCode::BAD_REQUEST, "Invalid id.".to_string()))?;
     if share.password.is_some() {
         let password = query.password.ok_or((StatusCode::BAD_REQUEST, "Invalid password.".to_string()))?;
         if !verify_password(&password, &share.password.unwrap()) {
-            return Err((StatusCode::UNAUTHORIZED, "Invalid password.".to_string()));
+            return Err(ErrorMessage::LoginFailed);
         }
     }
     
     let content_id = ContentType::try_from(query.content.as_str()).map_err(|_| { (StatusCode::BAD_REQUEST, "Invalid content.".to_string()) })?;
     let image = match content_id {
-        ContentType::Folder(_) => { return Err((StatusCode::BAD_REQUEST, "This api is image only.".to_string())); }
-        ContentType::Picture(id) => { UserImage::find_by_id(id).one(&state.db).await.unwrap().ok_or((StatusCode::NOT_FOUND, "Image not fount.".to_string()))? }
+        ContentType::Folder(id) => { return Err(ErrorMessage::InvalidParams(format!("folder {}", id))); }
+        ContentType::Picture(id) => { UserImage::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)? }
     };
     
     if !share.content.contains(&query.content) && !share.content.contains(&("f".to_string() + &image.folder_id.to_string())) {
-        return Err((StatusCode::BAD_REQUEST, "Invalid content.".to_string()));
+        return Err(ErrorMessage::PermissionDenied);
     }
 
     let mut file = ImageFile::new(image.image_id.as_str()).await.unwrap();

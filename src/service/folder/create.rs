@@ -10,20 +10,14 @@ use serde::Deserialize;
 
 use crate::model::prelude::Folder;
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::user::login::login_by_token;
 
-pub async fn create_folder(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Json(query): Json<CreateFolderRequest>) -> impl IntoResponse {
-    let user = login_by_token(&state.db, header_map).await;
-    if user.is_none() { 
-        return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
-    }
-    let user = user.unwrap();
+pub async fn create_folder(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Json(query): Json<CreateFolderRequest>) -> Result<(), ErrorMessage> {
+    let user = login_by_token(&state.db, header_map).await.ok_or(ErrorMessage::InvalidToken)?;
     
-    let parent = Folder::find_by_id(query.parent).one(&state.db).await.unwrap();
-    if parent.is_none() {
-        return Err((StatusCode::BAD_REQUEST, "Invalid parent folder.".to_string()));
-    }
-    let parent = parent.unwrap();
+    let parent = Folder::find_by_id(query.parent).one(&state.db).await.unwrap()
+        .ok_or(ErrorMessage::InvalidParams("parent".to_string()))?;
     
     let folder = crate::model::folder::ActiveModel{
         id: NotSet,

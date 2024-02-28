@@ -9,6 +9,7 @@ use tracing::{debug, error};
 
 use crate::model::prelude::{Folder, UserImage};
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::picture::file::save_file;
 use crate::service::user::login::login_by_token;
 
@@ -16,16 +17,12 @@ pub async fn post_picture(
     State(state): State<Arc<ServerState>>,
     headers: HeaderMap,
     mut multipart: Multipart,
-) -> Result<String, (StatusCode, String)> {
+) -> Result<String, ErrorMessage> {
     let mut file: Option<Bytes> = None;
     let mut file_name: Option<String> = None;
-    let user = login_by_token(&state.db, headers).await;
+    let user = login_by_token(&state.db, headers).await
+        .ok_or(ErrorMessage::InvalidToken)?;
     let mut resource_type = None;
-
-    if user.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
-    }
-    let user = user.unwrap();
     let mut dir = user.root;
 
     while let Some(field) = multipart.next_field().await.unwrap() {
@@ -36,12 +33,9 @@ pub async fn post_picture(
             Ok(a) => a,
             Err(err) => {
                 return if &err.body_text() == "failed to read stream" {
-                    Err((StatusCode::BAD_REQUEST, "File too large.".to_string()))
+                    Err(ErrorMessage::SizeTooLarge)
                 } else {
-                    Err((
-                        StatusCode::INTERNAL_SERVER_ERROR,
-                        err.body_text().to_string(),
-                    ))
+                    Err(ErrorMessage::Other(err.body_text().to_string()))
                 };
             }
         };
@@ -49,10 +43,7 @@ pub async fn post_picture(
         match name.as_str() {
             "file" => {
                 if !file_type.clone().unwrap().starts_with("image/") {
-                    return Err((
-                        StatusCode::BAD_REQUEST,
-                        "Invalid file type: ".to_string() + &file_type.clone().unwrap(),
-                    ));
+                    return Err(ErrorMessage::InvalidParams(format!("file type {}", file_type.unwrap())));
                 }
                 file = Some(data);
                 file_name = Some(field_file_name.unwrap());
@@ -73,7 +64,7 @@ pub async fn post_picture(
     }
 
     if file.is_none() || file_name.is_none() || resource_type.is_none() {
-        return Err((StatusCode::BAD_REQUEST, "Missing field.".to_string()));
+        return Err(ErrorMessage::InvalidParams("Missing field.".to_string()));
     }
     let file = file.unwrap();
     let file_name = file_name.unwrap();

@@ -9,20 +9,19 @@ use serde::{Deserialize, Serialize};
 
 use crate::model::prelude::UserImage;
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::picture::compress::ImageFile;
 use crate::service::user::login::login_by_token;
 
 pub async fn list_picture(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<ListPictureRequest>) -> impl IntoResponse {
     if query.size > 100 {
-        return Err((StatusCode::BAD_REQUEST, "Size too large.".to_string()));
+        return Err(ErrorMessage::SizeTooLarge);
     }
-    let user_id = login_by_token(&state.db, header_map).await;
-    if user_id.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
-    }
+    let user = login_by_token(&state.db, header_map).await
+        .ok_or(ErrorMessage::InvalidToken)?;
 
     let pictures = UserImage::find()
-        .filter(crate::model::user_image::Column::UserId.eq(user_id.unwrap().id))
+        .filter(crate::model::user_image::Column::UserId.eq(user.id))
         .filter(crate::model::user_image::Column::FolderId.eq(query.dir))
         .order_by(crate::model::user_image::Column::CreateTime, Order::Desc)
         .paginate(&state.db, query.size);
@@ -37,12 +36,9 @@ pub async fn list_picture(State(state): State<Arc<ServerState>>, header_map: Hea
 }
 
 pub async fn get_picture_preview(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<PictureGetPreviewRequest>)
-                                 -> impl IntoResponse {
-    let user = login_by_token(&state.db, header_map).await;
-    if user.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
-    }
-    let user = user.unwrap();
+                                 -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
+    let user = login_by_token(&state.db, header_map).await
+        .ok_or(ErrorMessage::InvalidToken)?;
 
     // let level: LevelInfo = user.level.into_iter()
     //     .map(|e| {
@@ -57,13 +53,9 @@ pub async fn get_picture_preview(State(state): State<Arc<ServerState>>, header_m
         .filter(crate::model::user_image::Column::UserId.eq(user.id))
         .filter(crate::model::user_image::Column::Id.eq(query.id))
         .one(&state.db)
-        .await.unwrap();
+        .await.unwrap().ok_or(ErrorMessage::NotFound)?;
 
-    if picture.is_none() {
-        return Err((StatusCode::NOT_FOUND, "Picture not found.".to_string()));
-    }
-
-    let picture = ImageFile::new(&picture.unwrap().image_id).await.unwrap();
+    let picture = ImageFile::new(&picture.image_id).await.unwrap();
 
     let mut headers = HeaderMap::new();
     headers.insert(

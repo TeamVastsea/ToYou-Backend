@@ -13,6 +13,7 @@ use tracing::log::debug;
 
 use crate::model::prelude::User;
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 
 lazy_static! {
     static ref CODE_CACHE: Cache<i32, String> = Cache::builder()
@@ -32,17 +33,17 @@ pub async fn get_user_phone(State(state): State<Arc<ServerState>>, Path(phone): 
     (!res.is_empty()).to_string()
 }
 
-pub async fn get_sms(State(state): State<Arc<ServerState>>, Query(params): Query<HashMap<String, String>>) -> Result<String, (StatusCode, String)> {
+pub async fn get_sms(State(state): State<Arc<ServerState>>, Query(params): Query<HashMap<String, String>>) -> Result<String, ErrorMessage> {
     if !params.contains_key("phone") {
-        return Err((StatusCode::BAD_REQUEST, "Invalid phone.".to_string()));
+        return Err(ErrorMessage::InvalidParams("phone".to_string()));
     }
     let phone = params.get("phone").unwrap();
     if !regex!(r"^1[3-9]\d{9}$").is_match(phone) {
-        return Err((StatusCode::BAD_REQUEST, "Invalid phone.".to_string()));
+        return Err(ErrorMessage::InvalidParams("phone".to_string()));
     }
 
     if HISTORY_CACHE.get(phone).await.is_some() {
-        return Err((StatusCode::TOO_MANY_REQUESTS, "Request too frequent.".to_string()));
+        return Err(ErrorMessage::TooFrequent);
     }
     let code = rand::thread_rng().gen_range(100000..999999);
     CODE_CACHE.insert(code, phone.clone()).await;

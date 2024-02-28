@@ -11,21 +11,19 @@ use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
 
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::share::content::ContentType;
 use crate::service::user::level::LevelInfo;
 use crate::service::user::login::login_by_token;
 use crate::service::user::password::generate_password_hash;
 
-pub async fn create_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Json(body): Json<CreateShareRequest>) -> impl IntoResponse {
-    let user_id = login_by_token(&state.db, headers).await;
-    if user_id.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
-    }
-    let user_id = user_id.unwrap();
+pub async fn create_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Json(body): Json<CreateShareRequest>) -> Result<String, ErrorMessage> {
+    let user_id = login_by_token(&state.db, headers).await
+        .ok_or(ErrorMessage::InvalidToken)?;
     
     for content in body.content.iter() {
         if !ContentType::verify(content) {
-            return Err((StatusCode::BAD_REQUEST, "Invalid content type.".to_string()));
+            return Err(ErrorMessage::InvalidParams(format!("content {}", content)));
         }
     }
 

@@ -15,6 +15,7 @@ use tracing::log::debug;
 use crate::model::prelude::{Folder, User};
 use crate::model::user::UserExtended;
 use crate::ServerState;
+use crate::service::error::ErrorMessage;
 use crate::service::user::level::{LevelInfo};
 use crate::service::user::password::verify_password;
 
@@ -29,11 +30,8 @@ lazy_static!{
 pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMap, Query(request): Query<LoginRequest>) -> impl IntoResponse {
     if headers.contains_key("token") {
         debug!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
-        let user = login_by_token(&state.db, headers).await;
-        if user.is_none() {
-            return Err((StatusCode::UNAUTHORIZED, "Invalid token.".to_string()));
-        }
-        let user = user.unwrap();
+        let user = login_by_token(&state.db, headers).await
+            .ok_or(ErrorMessage::InvalidToken)?;
         let headers = HeaderMap::new();
 
         if request.extended { //extended information includes the user's level and used space
@@ -63,12 +61,12 @@ pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMa
 
     let user = User::find().filter(crate::model::user::Column::Phone.eq(request.account)).one(&state.db).await.unwrap();
     if user.is_none() {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid username or password.".to_string()));
+        return Err(ErrorMessage::LoginFailed);
     }
     let user = user.unwrap();
 
     if !verify_password(&request.password, &user.password) {
-        return Err((StatusCode::UNAUTHORIZED, "Invalid username or password.".to_string()));
+        return Err(ErrorMessage::LoginFailed);
     }
 
     // Generate a random token

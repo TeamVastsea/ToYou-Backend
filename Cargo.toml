@@ -47,4 +47,5 @@ migration = { path = "migration" }
 
 #third party
 lsys-lib-sms = "0.1.0"
-
+labrador = { version = "0.2.3", features = ["alipay", "wechat"] }
+uuid = { version = "1.7.0", features = ["v4"] }
