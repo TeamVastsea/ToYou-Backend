@@ -50,18 +50,18 @@ pub async fn get_share_info(State(state): State<Arc<ServerState>>, Query(query):
 }
 
 pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query): Query<GetShareImageRequest>) -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
-    let id = Uuid::from_str(&query.id).map_err(|_| { (StatusCode::BAD_REQUEST, "Invalid id.".to_string()) })?;
-    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or((StatusCode::BAD_REQUEST, "Invalid id.".to_string()))?;
+    let id = Uuid::from_str(&query.id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
+    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
     if share.password.is_some() {
-        let password = query.password.ok_or((StatusCode::BAD_REQUEST, "Invalid password.".to_string()))?;
+        let password = query.password.ok_or(ErrorMessage::LoginFailed)?;
         if !verify_password(&password, &share.password.unwrap()) {
             return Err(ErrorMessage::LoginFailed);
         }
     }
 
-    let content_id = ContentType::try_from(query.content.as_str()).map_err(|_| { (StatusCode::BAD_REQUEST, "Invalid content.".to_string()) })?;
+    let content_id = ContentType::try_from(query.content.as_str()).map_err(|_| { ErrorMessage::InvalidParams("content".to_string()) })?;
     let image = match content_id {
-        ContentType::Folder(id) => { return Err(ErrorMessage::InvalidParams(format!("folder {}", id))); }
+        ContentType::Folder(id) => { return Err(ErrorMessage::InvalidParams("folder".to_string())); }
         ContentType::Picture(id) => { UserImage::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)? }
     };
 

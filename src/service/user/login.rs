@@ -28,59 +28,37 @@ lazy_static! {
 
 
 pub async fn login_user(State(state): State<Arc<ServerState>>, headers: HeaderMap, Query(request): Query<LoginRequest>) -> impl IntoResponse {
-    if headers.contains_key("token") {
+    let mut need_token = false;
+    
+    let user = if headers.contains_key("token") { //login with token
         debug!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
-        let user = login_by_token(&state.db, headers).await
-            .ok_or(ErrorMessage::InvalidToken)?;
-        let headers = HeaderMap::new();
+        login_by_token(&state.db, headers).await
+            .ok_or(ErrorMessage::InvalidToken)?
+    } else { //login with username and password
+        need_token = true;
+        let user = User::find().filter(crate::model::user::Column::Phone.eq(request.account)).one(&state.db)
+            .await.unwrap().ok_or(ErrorMessage::LoginFailed)?;
 
-        if request.extended { //extended information includes the user's level and used space
-            let levels: Vec<Vec<i64>> = user.level.iter().map(|level| serde_json::from_str(level).unwrap()).collect();
-            let levels: Vec<LevelInfo> = levels.into_iter().map(|level| LevelInfo::try_from(level).unwrap()).collect();
-            let max_level = levels.into_iter().max().unwrap_or_else(|| LevelInfo::get_free_level());
-
-            let root_size = Folder::find_by_id(user.root).one(&state.db).await.unwrap().unwrap().size;
-            let user = UserExtended {
-                id: user.id,
-                username: user.username,
-                phone: user.phone,
-                email: user.email,
-                available: user.available,
-                level: max_level,
-                root: user.root,
-                used_space: root_size,
-                create_time: user.create_time,
-                update_time: user.update_time,
-            };
-
-            return Ok((headers, serde_json::to_string(&user).unwrap()));
+        if !verify_password(&request.password, &user.password) {
+            return Err(ErrorMessage::LoginFailed);
         }
+        
+        user
+    };
 
-        return Ok((headers, serde_json::to_string(&user).unwrap()));
-    }
-
-    let user = User::find().filter(crate::model::user::Column::Phone.eq(request.account)).one(&state.db).await.unwrap();
-    if user.is_none() {
-        return Err(ErrorMessage::LoginFailed);
-    }
-    let user = user.unwrap();
-
-    if !verify_password(&request.password, &user.password) {
-        return Err(ErrorMessage::LoginFailed);
-    }
-
-    // Generate a random token
-    let token: String = rand::thread_rng()
-        .sample_iter(&rand::distributions::Alphanumeric)
-        .take(30)
-        .map(char::from)
-        .collect();
-
-    TOKEN_CACHE.insert(token.clone(), user.id).await;
-
-    debug!("Token: {token}");
     let mut headers = HeaderMap::new();
-    headers.insert("token", token.parse().unwrap());
+    if need_token {
+        // Generate a random token
+        let token: String = rand::thread_rng()
+            .sample_iter(&rand::distributions::Alphanumeric)
+            .take(30)
+            .map(char::from)
+            .collect();
+
+        TOKEN_CACHE.insert(token.clone(), user.id).await;
+        debug!("Token: {token}");
+        headers.insert("token", token.parse().unwrap());
+    }
 
 
     if request.extended { //extended information includes the user's level and used space
