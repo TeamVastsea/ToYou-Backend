@@ -1,8 +1,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
+
 use axum::extract::{Query, State};
-use axum::http::{HeaderMap, StatusCode};
+use axum::http::HeaderMap;
 use sea_orm::EntityTrait;
+
 use crate::model::prelude::Folder;
 use crate::ServerState;
 use crate::service::error::ErrorMessage;
@@ -16,10 +18,10 @@ pub async fn get_folder_info(State(state): State<Arc<ServerState>>, headers: Hea
         .parse().map_err(|_| ErrorMessage::InvalidParams("folder_id".to_string()))?;
     let folder = Folder::find_by_id(query_id).one(&state.db).await.unwrap()
         .ok_or(ErrorMessage::InvalidParams("folder_id".to_string()))?;
-    
-    if !folder.user_id == user.id { 
+
+    if !folder.user_id == user.id {
         return Err(ErrorMessage::PermissionDenied);
     }
-    
+
     Ok(serde_json::to_string(&folder).unwrap())
 }

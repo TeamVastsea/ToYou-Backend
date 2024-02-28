@@ -16,10 +16,10 @@ use crate::model::prelude::{Folder, User};
 use crate::model::user::UserExtended;
 use crate::ServerState;
 use crate::service::error::ErrorMessage;
-use crate::service::user::level::{LevelInfo};
+use crate::service::user::level::LevelInfo;
 use crate::service::user::password::verify_password;
 
-lazy_static!{
+lazy_static! {
     static ref TOKEN_CACHE: Cache<String, i64> = Cache::builder()
         .time_to_idle(Duration::from_secs(60 * 60 * 24 * 7)) //if the key is not accessed for 7 days, it will be removed
         .build();

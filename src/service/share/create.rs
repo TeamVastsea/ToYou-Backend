@@ -2,9 +2,8 @@ use std::cmp::min;
 use std::sync::Arc;
 
 use axum::extract::State;
-use axum::http::{HeaderMap, StatusCode};
+use axum::http::HeaderMap;
 use axum::Json;
-use axum::response::IntoResponse;
 use chrono::{Days, Utc};
 use sea_orm::{ActiveModelTrait, NotSet};
 use sea_orm::ActiveValue::Set;
@@ -20,7 +19,7 @@ use crate::service::user::password::generate_password_hash;
 pub async fn create_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Json(body): Json<CreateShareRequest>) -> Result<String, ErrorMessage> {
     let user_id = login_by_token(&state.db, headers).await
         .ok_or(ErrorMessage::InvalidToken)?;
-    
+
     for content in body.content.iter() {
         if !ContentType::verify(content) {
             return Err(ErrorMessage::InvalidParams(format!("content {}", content)));
@@ -38,7 +37,7 @@ pub async fn create_share(State(state): State<Arc<ServerState>>, headers: Header
         None => { None }
         Some(a) => { Some(generate_password_hash(&a)) }
     };
-    
+
     let share = crate::model::share::ActiveModel {
         id: NotSet,
         content: Set(body.content),
@@ -48,13 +47,13 @@ pub async fn create_share(State(state): State<Arc<ServerState>>, headers: Header
         create_time: NotSet,
         valid_time: Set(Utc::now().checked_add_days(Days::new(7)).unwrap().naive_local()),
     };
-    
-    return Ok(share.insert(&state.db).await.unwrap().id.to_string())
+
+    return Ok(share.insert(&state.db).await.unwrap().id.to_string());
 }
 
 #[derive(Deserialize)]
 pub struct CreateShareRequest {
     mode: i16,
     password: Option<String>,
-    content: Vec<String>
+    content: Vec<String>,
 }
