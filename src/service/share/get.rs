@@ -3,12 +3,12 @@ use std::str::FromStr;
 use std::sync::Arc;
 
 use axum::extract::{Path, Query, State};
-use axum::http::{HeaderMap, HeaderName, HeaderValue, StatusCode};
+use axum::http::{HeaderMap, HeaderName, HeaderValue};
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter};
 use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
 
-use crate::model::prelude::{Share, User, UserImage};
+use crate::model::prelude::{Folder, Share, User, UserImage};
 use crate::model::share::ShareInfo;
 use crate::ServerState;
 use crate::service::error::ErrorMessage;
@@ -80,6 +80,46 @@ pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query)
     Ok((headers, file.encode().unwrap()))
 }
 
+pub async fn get_share_folder(State(state): State<Arc<ServerState>>, Query(query): Query<GetShareFolderRequest>) -> Result<String, ErrorMessage> {
+    let id = Uuid::from_str(&query.id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
+    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+
+    if query.size > 100 {
+        return Err(ErrorMessage::SizeTooLarge);
+    }
+
+    if share.password.is_some() {
+        let password = query.password.ok_or(ErrorMessage::LoginFailed)?;
+        if !verify_password(&password, &share.password.unwrap()) {
+            return Err(ErrorMessage::LoginFailed);
+        }
+    }
+
+    let content_id = ContentType::try_from(query.content.as_str()).map_err(|_| { ErrorMessage::InvalidParams("content".to_string()) })?;
+    let folder = match content_id {
+        ContentType::Folder(id) => { id }
+        ContentType::Picture(_) => { return Err(ErrorMessage::InvalidParams("picture".to_string())); }
+    };
+
+    if !share.content.contains(&query.content) {
+        return Err(ErrorMessage::PermissionDenied);
+    }
+
+    let folder = Folder::find_by_id(folder).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let images = UserImage::find()
+        .filter(crate::model::user_image::Column::FolderId.eq(folder.id))
+        .paginate(&state.db, query.size);
+
+    let response = GetShareFolderContentResponse {
+        folder,
+        content: images.fetch_page(query.current).await.unwrap(),
+        pages: images.num_pages().await.unwrap(),
+        total: images.num_items().await.unwrap(),
+    };
+
+    Ok(serde_json::to_string(&response).unwrap())
+}
+
 pub async fn list_all_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Query(query): Query<ListShareRequest>) -> Result<String, ErrorMessage> {
     let user = crate::service::user::login::login_by_token(&state.db, headers).await
         .ok_or(ErrorMessage::InvalidToken)?;
@@ -127,4 +167,21 @@ pub struct GetShareImageRequest {
     id: String,
     password: Option<String>,
     content: String,
+}
+
+#[derive(Deserialize)]
+pub struct GetShareFolderRequest {
+    id: String,
+    password: Option<String>,
+    content: String,
+    size: u64,
+    current: u64,
+}
+
+#[derive(Serialize)]
+pub struct GetShareFolderContentResponse {
+    folder: crate::model::folder::Model,
+    content: Vec<crate::model::user_image::Model>,
+    pages: u64,
+    total: u64,
 }
