@@ -9,6 +9,7 @@ use axum_server::tls_rustls::RustlsConfig;
 use chrono::Local;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde_json::json;
+use shadow_rs::shadow;
 use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::cors::CorsLayer;
 use tower_http::trace::TraceLayer;
@@ -141,7 +142,6 @@ struct ServerState {
 }
 
 async fn ping() -> String {
-    json!(
-        {"version": env!("CARGO_PKG_VERSION")}
-    ).to_string()
+    shadow!(build);
+    json!({"version": 2, "build_time": build::BUILD_TIME, "commit": build::SHORT_COMMIT, "rust_version": build::RUST_VERSION}).to_string()
 }
