@@ -26,10 +26,12 @@ use migration::{Migrator, MigratorTrait};
 use crate::config::{Config, rename_log};
 use crate::service::folder::create::create_folder;
 use crate::service::folder::get::get_folder_info;
+use crate::service::folder::rename::rename_folder;
 use crate::service::picture::get::{get_picture_preview, list_picture};
+use crate::service::picture::rename::rename_picture;
 use crate::service::picture::upload::post_picture;
 use crate::service::share::create::create_share;
-use crate::service::share::get::{check_share_password, get_share_image, get_share_info};
+use crate::service::share::get::{check_share_password, get_share_image, get_share_info, list_all_share};
 use crate::service::user::login::login_user;
 use crate::service::user::phone::{get_sms, get_user_phone};
 use crate::service::user::register::register_user;
@@ -94,10 +96,11 @@ async fn main() {
         .route("/user", post(register_user).get(login_user))
         .route("/user/phone/:id", get(get_user_phone))
         .route("/user/code/phone", get(get_sms))
-        .route("/picture", post(post_picture).get(list_picture))
+        .route("/picture", post(post_picture).get(list_picture).patch(rename_picture))
         .route("/picture/preview", get(get_picture_preview))
-        .route("/folder", post(create_folder).get(get_folder_info))
-        .route("/share", post(create_share).get(get_share_info))
+        .route("/folder", post(create_folder).get(get_folder_info).patch(rename_folder))
+        .route("/share", post(create_share).get(list_all_share))
+        .route("/share/:id", get(get_share_info))
         .route("/share/password", get(check_share_password))
         .route("/share/image", get(get_share_image))
         .route("/ping", get(ping))
