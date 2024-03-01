@@ -1,18 +1,15 @@
-use std::sync::Arc;
-
-use axum::extract::State;
 use axum::Json;
 use lazy_regex::regex;
 use sea_orm::{ActiveModelTrait, IntoActiveModel, NotSet};
 use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
 
-use crate::ServerState;
+use crate::DATABASE;
 use crate::service::error::ErrorMessage;
 use crate::service::user::password::generate_password_hash;
 use crate::service::user::phone::verify_sms;
 
-pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request): Json<RegisterRequest>) -> Result<String, ErrorMessage> {
+pub async fn register_user(Json(request): Json<RegisterRequest>) -> Result<String, ErrorMessage> {
     let phone = request.phone;
 
     if !is_valid_password(&request.password) {
@@ -33,7 +30,7 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
         create_time: NotSet,
         update_time: NotSet,
     };
-    let user_root = user_root.insert(&state.db).await.unwrap();
+    let user_root = user_root.insert(&*DATABASE).await.unwrap();
 
     let user = crate::model::user::ActiveModel {
         id: NotSet,
@@ -48,10 +45,10 @@ pub async fn register_user(State(state): State<Arc<ServerState>>, Json(request):
         update_time: NotSet,
     };
 
-    let user = user.insert(&state.db).await.unwrap();
+    let user = user.insert(&*DATABASE).await.unwrap();
     let mut user_root = user_root.into_active_model();
     user_root.user_id = Set(user.id);
-    user_root.update(&state.db).await.unwrap();
+    user_root.update(&*DATABASE).await.unwrap();
 
     Ok("success".to_string())
 }

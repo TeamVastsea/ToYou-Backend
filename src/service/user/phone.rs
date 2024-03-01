@@ -1,9 +1,7 @@
 use std::collections::HashMap;
-use std::sync::Arc;
 use std::time::Duration;
 
-use axum::extract::{Path, Query, State};
-use axum::http::StatusCode;
+use axum::extract::{Path, Query};
 use lazy_regex::regex;
 use lazy_static::lazy_static;
 use moka::future::Cache;
@@ -11,8 +9,8 @@ use rand::Rng;
 use sea_orm::{ColumnTrait, EntityTrait, QueryFilter};
 use tracing::log::debug;
 
+use crate::{CONFIG, DATABASE};
 use crate::model::prelude::User;
-use crate::ServerState;
 use crate::service::error::ErrorMessage;
 
 lazy_static! {
@@ -27,13 +25,13 @@ lazy_static! {
     static ref SMS_CLIENT: reqwest::Client = reqwest::Client::new();
 }
 
-pub async fn get_user_phone(State(state): State<Arc<ServerState>>, Path(phone): Path<String>) -> String {
+pub async fn get_user_phone(Path(phone): Path<String>) -> String {
     debug!("Get user phone: {}", phone);
-    let res = User::find().filter(crate::model::user::Column::Phone.eq(phone)).all(&state.db).await.unwrap();
+    let res = User::find().filter(crate::model::user::Column::Phone.eq(phone)).all(&*DATABASE).await.unwrap();
     (!res.is_empty()).to_string()
 }
 
-pub async fn get_sms(State(state): State<Arc<ServerState>>, Query(params): Query<HashMap<String, String>>) -> Result<String, ErrorMessage> {
+pub async fn get_sms(Query(params): Query<HashMap<String, String>>) -> Result<String, ErrorMessage> {
     if !params.contains_key("phone") {
         return Err(ErrorMessage::InvalidParams("phone".to_string()));
     }
@@ -51,10 +49,10 @@ pub async fn get_sms(State(state): State<Arc<ServerState>>, Query(params): Query
     lsys_lib_sms::AliSms::branch_send(
         SMS_CLIENT.clone(),
         "",
-        &state.config.aliyun.app_key,
-        &state.config.aliyun.app_secret,
-        &state.config.aliyun.sign_name,
-        &state.config.aliyun.template_code,
+        &CONFIG.aliyun.app_key,
+        &CONFIG.aliyun.app_secret,
+        &CONFIG.aliyun.sign_name,
+        &CONFIG.aliyun.template_code,
         (r#"{"code":"#.to_string() + &code.to_string() + r#"}"#).as_str(),
         &[phone],
         "",

@@ -1,5 +1,3 @@
-use std::sync::Arc;
-
 use axum::{http, Router};
 use axum::body::Body;
 use axum::extract::DefaultBodyLimit;
@@ -7,6 +5,7 @@ use axum::http::Request;
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
 use chrono::Local;
+use lazy_static::lazy_static;
 use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde_json::json;
 use shadow_rs::shadow;
@@ -41,12 +40,21 @@ mod config;
 mod model;
 mod service;
 
+lazy_static!{
+    static ref CONFIG: Config = Config::new();
+    static ref DATABASE: DatabaseConnection = {
+        let mut opt = ConnectOptions::new(&CONFIG.connection.db_uri);
+        opt.sqlx_logging(true);
+        opt.sqlx_logging_level(LevelFilter::Debug);
+        futures::executor::block_on(Database::connect(opt)).unwrap()
+    };
+}
+
 #[tokio::main]
 async fn main() {
-    let config = Config::new();
 
     let env_filter =
-        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&config.trace_level));
+        EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&CONFIG.trace_level));
     let file_appender = RollingFileAppender::builder()
         .rotation(Rotation::NEVER)
         .filename_suffix(format!(
@@ -71,12 +79,7 @@ async fn main() {
         .with(file_layer)
         .init();
 
-    let mut opt = ConnectOptions::new(&config.connection.db_uri);
-    opt.sqlx_logging(true);
-    opt.sqlx_logging_level(LevelFilter::Debug);
-    let db = Database::connect(opt).await.unwrap();
-
-    Migrator::up(&db, None).await.unwrap();
+    Migrator::up(&*DATABASE, None).await.unwrap();
 
     let trace_layer = TraceLayer::new_for_http()
         .on_request(|request: &Request<Body>, _span: &Span| {
@@ -87,11 +90,6 @@ async fn main() {
                 debug!("{}", response.status());
             },
         );
-
-    let app_state = Arc::new(ServerState {
-        config: config.clone(),
-        db,
-    });
 
     let app = Router::new()
         .route("/user", post(register_user).get(login_user))
@@ -106,20 +104,19 @@ async fn main() {
         .route("/share/image", get(get_share_image))
         .route("/share/folder", get(get_share_folder))
         .route("/ping", get(ping))
-        .with_state(app_state)
         .layer(trace_layer)
         .layer(CorsLayer::permissive())
         .layer(CatchPanicLayer::new())
         .layer(DefaultBodyLimit::max(
-            config.connection.max_body_size * 1024 * 1024,
+            CONFIG.connection.max_body_size * 1024 * 1024,
         ));
-    let addr = config.connection.server_addr.parse().unwrap();
+    let addr = CONFIG.connection.server_addr.parse().unwrap();
     info!("Listening: {addr}");
 
-    if config.connection.tls {
+    if CONFIG.connection.tls {
         debug!("HTTPS enabled.");
         let tls_config =
-            RustlsConfig::from_pem_file(config.connection.ssl_cert, config.connection.ssl_key)
+            RustlsConfig::from_pem_file(&CONFIG.connection.ssl_cert, &CONFIG.connection.ssl_key)
                 .await
                 .unwrap();
         axum_server::bind_rustls(addr, tls_config)
@@ -134,11 +131,6 @@ async fn main() {
             .unwrap();
     }
     println!("Hello, world!");
-}
-
-struct ServerState {
-    pub config: Config,
-    pub db: DatabaseConnection,
 }
 
 async fn ping() -> String {

@@ -1,30 +1,28 @@
-use std::sync::Arc;
-
-use axum::extract::{Query, State};
+use axum::extract::Query;
 use axum::http::{HeaderMap, HeaderName, HeaderValue};
 use axum::Json;
 use axum::response::IntoResponse;
 use sea_orm::{ColumnTrait, EntityTrait, Order, PaginatorTrait, QueryFilter, QueryOrder};
 use serde::{Deserialize, Serialize};
 
+use crate::DATABASE;
 use crate::model::prelude::UserImage;
-use crate::ServerState;
 use crate::service::error::ErrorMessage;
 use crate::service::picture::compress::ImageFile;
 use crate::service::user::login::login_by_token;
 
-pub async fn list_picture(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<ListPictureRequest>) -> impl IntoResponse {
+pub async fn list_picture(header_map: HeaderMap, Query(query): Query<ListPictureRequest>) -> impl IntoResponse {
     if query.size > 100 {
         return Err(ErrorMessage::SizeTooLarge);
     }
-    let user = login_by_token(&state.db, header_map).await
+    let user = login_by_token(header_map).await
         .ok_or(ErrorMessage::InvalidToken)?;
 
     let pictures = UserImage::find()
         .filter(crate::model::user_image::Column::UserId.eq(user.id))
         .filter(crate::model::user_image::Column::FolderId.eq(query.dir))
         .order_by(crate::model::user_image::Column::CreateTime, Order::Desc)
-        .paginate(&state.db, query.size);
+        .paginate(&*DATABASE, query.size);
 
     let response = ListPictureResponse {
         pages: pictures.num_pages().await.unwrap(),
@@ -35,9 +33,9 @@ pub async fn list_picture(State(state): State<Arc<ServerState>>, header_map: Hea
     Ok(Json(response))
 }
 
-pub async fn get_picture_preview(State(state): State<Arc<ServerState>>, header_map: HeaderMap, Query(query): Query<PictureGetPreviewRequest>)
+pub async fn get_picture_preview(header_map: HeaderMap, Query(query): Query<PictureGetPreviewRequest>)
                                  -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
-    let user = login_by_token(&state.db, header_map).await
+    let user = login_by_token(header_map).await
         .ok_or(ErrorMessage::InvalidToken)?;
 
     // let level: LevelInfo = user.level.into_iter()
@@ -52,7 +50,7 @@ pub async fn get_picture_preview(State(state): State<Arc<ServerState>>, header_m
     let picture = UserImage::find()
         .filter(crate::model::user_image::Column::UserId.eq(user.id))
         .filter(crate::model::user_image::Column::Id.eq(query.id))
-        .one(&state.db)
+        .one(&*DATABASE)
         .await.unwrap().ok_or(ErrorMessage::NotFound)?;
 
     let picture = ImageFile::new(&picture.image_id).await.unwrap();

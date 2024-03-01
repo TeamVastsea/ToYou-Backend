@@ -15,6 +15,8 @@ pub struct Config {
     pub connection: ConnectionConfig,
     #[serde(default = "generate_aliyun_setting")]
     pub aliyun: AliyunConfig,
+    #[serde(default = "generate_wechat_setting")]
+    pub wechat: WeChatConfig,
 }
 
 #[serde_inline_default]
@@ -47,6 +49,15 @@ pub struct AliyunConfig {
     pub sign_name: String,
 }
 
+#[serde_inline_default]
+#[derive(Serialize, Deserialize, Clone)]
+pub struct WeChatConfig {
+    #[serde_inline_default(String::from("appid"))]
+    pub app_id: String,
+    #[serde_inline_default(String::from("secret"))]
+    pub app_secret: String,
+}
+
 fn generate_connection_setting() -> ConnectionConfig {
     ConnectionConfig {
         server_addr: "0.0.0.0:7890".to_string(),
@@ -55,6 +66,13 @@ fn generate_connection_setting() -> ConnectionConfig {
         ssl_cert: "./cert.crt".to_string(),
         ssl_key: "./private.key".to_string(),
         max_body_size: 2,
+    }
+}
+
+fn generate_wechat_setting() -> WeChatConfig {
+    WeChatConfig {
+        app_id: "appid".to_string(),
+        app_secret: "secret".to_string(),
     }
 }
 

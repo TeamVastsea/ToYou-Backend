@@ -2,6 +2,7 @@
 
 use sea_orm::entity::prelude::*;
 use serde::Serialize;
+
 use crate::service::user::level::LevelInfo;
 
 #[derive(Clone, Debug, PartialEq, DeriveEntityModel, Eq, Serialize)]

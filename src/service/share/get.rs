@@ -1,40 +1,39 @@
 use std::collections::HashMap;
 use std::str::FromStr;
-use std::sync::Arc;
 
-use axum::extract::{Path, Query, State};
+use axum::extract::{Path, Query};
 use axum::http::{HeaderMap, HeaderName, HeaderValue};
 use sea_orm::{ColumnTrait, EntityTrait, PaginatorTrait, QueryFilter};
 use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
 
+use crate::DATABASE;
 use crate::model::prelude::{Folder, Share, User, UserImage};
 use crate::model::share::ShareInfo;
-use crate::ServerState;
 use crate::service::error::ErrorMessage;
 use crate::service::picture::compress::ImageFile;
 use crate::service::share::content::ContentType;
 use crate::service::user::level::ShareLevel;
 use crate::service::user::password::verify_password;
 
-pub async fn check_share_password(State(state): State<Arc<ServerState>>, Query(query): Query<HashMap<String, String>>) -> Result<String, ErrorMessage> {
+pub async fn check_share_password(Query(query): Query<HashMap<String, String>>) -> Result<String, ErrorMessage> {
     let id = query.get("id").ok_or(ErrorMessage::InvalidParams("id".to_string()))?;
     let id = Uuid::from_str(id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
-    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let share = Share::find_by_id(id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
 
     return Ok(share.password.is_some().to_string());
 }
 
-pub async fn get_share_info(State(state): State<Arc<ServerState>>, Query(query): Query<HashMap<String, String>>, Path(id): Path<String>) -> Result<String, ErrorMessage> {
+pub async fn get_share_info(Query(query): Query<HashMap<String, String>>, Path(id): Path<String>) -> Result<String, ErrorMessage> {
     let id = Uuid::from_str(&id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
-    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let share = Share::find_by_id(id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
     if share.password.is_some() {
         let password = query.get("password").ok_or(ErrorMessage::LoginFailed)?;
         if !verify_password(password, &share.password.unwrap()) {
             return Err(ErrorMessage::LoginFailed);
         }
     }
-    let user = User::find_by_id(share.user_id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let user = User::find_by_id(share.user_id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
 
     let share_info = ShareInfo {
         id: share.id,
@@ -48,9 +47,9 @@ pub async fn get_share_info(State(state): State<Arc<ServerState>>, Query(query):
     Ok(serde_json::to_string(&share_info).unwrap())
 }
 
-pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query): Query<GetShareImageRequest>) -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
+pub async fn get_share_image(Query(query): Query<GetShareImageRequest>) -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
     let id = Uuid::from_str(&query.id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
-    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let share = Share::find_by_id(id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
     if share.password.is_some() {
         let password = query.password.ok_or(ErrorMessage::LoginFailed)?;
         if !verify_password(&password, &share.password.unwrap()) {
@@ -61,7 +60,7 @@ pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query)
     let content_id = ContentType::try_from(query.content.as_str()).map_err(|_| { ErrorMessage::InvalidParams("content".to_string()) })?;
     let image = match content_id {
         ContentType::Folder(_) => { return Err(ErrorMessage::InvalidParams("folder".to_string())); }
-        ContentType::Picture(id) => { UserImage::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)? }
+        ContentType::Picture(id) => { UserImage::find_by_id(id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)? }
     };
 
     if !share.content.contains(&query.content) && !share.content.contains(&("f".to_string() + &image.folder_id.to_string())) {
@@ -80,9 +79,9 @@ pub async fn get_share_image(State(state): State<Arc<ServerState>>, Query(query)
     Ok((headers, file.encode().unwrap()))
 }
 
-pub async fn get_share_folder(State(state): State<Arc<ServerState>>, Query(query): Query<GetShareFolderRequest>) -> Result<String, ErrorMessage> {
+pub async fn get_share_folder(Query(query): Query<GetShareFolderRequest>) -> Result<String, ErrorMessage> {
     let id = Uuid::from_str(&query.id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
-    let share = Share::find_by_id(id).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let share = Share::find_by_id(id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
 
     if query.size > 100 {
         return Err(ErrorMessage::SizeTooLarge);
@@ -105,10 +104,10 @@ pub async fn get_share_folder(State(state): State<Arc<ServerState>>, Query(query
         return Err(ErrorMessage::PermissionDenied);
     }
 
-    let folder = Folder::find_by_id(folder).one(&state.db).await.unwrap().ok_or(ErrorMessage::NotFound)?;
+    let folder = Folder::find_by_id(folder).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
     let images = UserImage::find()
         .filter(crate::model::user_image::Column::FolderId.eq(folder.id))
-        .paginate(&state.db, query.size);
+        .paginate(&*DATABASE, query.size);
 
     let response = GetShareFolderContentResponse {
         folder,
@@ -120,8 +119,8 @@ pub async fn get_share_folder(State(state): State<Arc<ServerState>>, Query(query
     Ok(serde_json::to_string(&response).unwrap())
 }
 
-pub async fn list_all_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Query(query): Query<ListShareRequest>) -> Result<String, ErrorMessage> {
-    let user = crate::service::user::login::login_by_token(&state.db, headers).await
+pub async fn list_all_share(headers: HeaderMap, Query(query): Query<ListShareRequest>) -> Result<String, ErrorMessage> {
+    let user = crate::service::user::login::login_by_token(headers).await
         .ok_or(ErrorMessage::InvalidToken)?;
 
     if query.size > 100 {
@@ -129,7 +128,7 @@ pub async fn list_all_share(State(state): State<Arc<ServerState>>, headers: Head
     }
 
     let shares = Share::find()
-        .filter(crate::model::share::Column::UserId.eq(user.id)).paginate(&state.db, query.size);
+        .filter(crate::model::share::Column::UserId.eq(user.id)).paginate(&*DATABASE, query.size);
 
     let response = ListPictureResponse {
         pages: shares.num_pages().await.unwrap(),

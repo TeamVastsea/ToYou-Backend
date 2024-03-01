@@ -4,11 +4,11 @@ use std::io::Error;
 use image::{ColorType, DynamicImage, GenericImageView};
 use image::codecs::jpeg::JpegEncoder;
 use image::imageops::overlay;
+use image::io::Reader as ImageReader;
 use lazy_static::lazy_static;
 
 use crate::service::picture::file::read_image;
 use crate::service::user::level::ShareLevel;
-use image::io::Reader as ImageReader;
 
 lazy_static!{
     static ref LOGO_FILE: DynamicImage = ImageReader::open("logo.png").unwrap().decode().unwrap();

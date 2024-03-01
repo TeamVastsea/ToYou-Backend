@@ -4,9 +4,11 @@ use base64::Engine;
 use base64::prelude::BASE64_URL_SAFE_NO_PAD;
 use image::DynamicImage;
 use image::io::Reader as ImageReader;
+use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, NotSet};
 use sea_orm::ActiveValue::Set;
-use sea_orm::{ActiveModelTrait, DatabaseConnection, EntityTrait, IntoActiveModel, NotSet};
 use tokio::fs::try_exists;
+
+use crate::DATABASE;
 use crate::model::prelude::Image;
 
 /// Writw a file to disk and generate the id of the file
@@ -104,26 +106,26 @@ pub async fn read_image(file_id: &str) -> Option<DynamicImage> {
 /// let file_content = fs::read("path/to/file").await.unwrap();
 /// let file_id = save_file(db, file_content).await;
 /// ```
-pub async fn save_file(db: &DatabaseConnection, file_content: impl AsRef<[u8]>) -> String {
+pub async fn save_file(file_content: impl AsRef<[u8]>) -> String {
     let id = write_file(&file_content).await.unwrap();
 
-    if Image::find_by_id(&id).one(db).await.unwrap().is_none() {
+    if Image::find_by_id(&id).one(&*DATABASE).await.unwrap().is_none() {
         let image = crate::model::image::ActiveModel {
             id: Set(id.clone()),
             used: Set(1),
             size: Set(file_content.as_ref().len() as f64 / 1024f64),
             create_time: NotSet,
         };
-        image.insert(db).await.unwrap();
+        image.insert(&*DATABASE).await.unwrap();
     } else {
         let image = Image::find_by_id(&id)
-            .one(db)
+            .one(&*DATABASE)
             .await
             .unwrap()
             .unwrap();
         let mut image = image.into_active_model();
         image.used = Set(image.used.unwrap() + 1);
-        image.save(db).await.unwrap();
+        image.save(&*DATABASE).await.unwrap();
     }
     
     return id;

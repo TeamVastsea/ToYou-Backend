@@ -1,26 +1,20 @@
-use std::sync::Arc;
-
 use axum::body::Bytes;
-use axum::extract::{Multipart, State};
-use axum::http::{HeaderMap, StatusCode};
+use axum::extract::Multipart;
+use axum::http::HeaderMap;
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, NotSet};
 use sea_orm::ActiveValue::Set;
 use tracing::{debug, error};
 
-use crate::model::prelude::{Folder, UserImage};
-use crate::ServerState;
+use crate::DATABASE;
+use crate::model::prelude::Folder;
 use crate::service::error::ErrorMessage;
 use crate::service::picture::file::save_file;
 use crate::service::user::login::login_by_token;
 
-pub async fn post_picture(
-    State(state): State<Arc<ServerState>>,
-    headers: HeaderMap,
-    mut multipart: Multipart,
-) -> Result<String, ErrorMessage> {
+pub async fn post_picture(headers: HeaderMap, mut multipart: Multipart, ) -> Result<String, ErrorMessage> {
     let mut file: Option<Bytes> = None;
     let mut file_name: Option<String> = None;
-    let user = login_by_token(&state.db, headers).await
+    let user = login_by_token(headers).await
         .ok_or(ErrorMessage::InvalidToken)?;
     let mut resource_type = None;
     let mut dir = user.root;
@@ -72,7 +66,7 @@ pub async fn post_picture(
     // if UserImage::find()
     //     .filter(crate::model::user_image::Column::FileName.eq(&file_name))
     //     .filter(crate::model::user_image::Column::UserId.eq(user.id))
-    //     .one(&state.db)
+    //     .one(&*DATABASE)
     //     .await
     //     .unwrap()
     //     .is_some()
@@ -80,7 +74,7 @@ pub async fn post_picture(
     //     return Err((StatusCode::CONFLICT, "File already exists.".to_string()));
     // }
 
-    let id = save_file(&state.db, &file).await;
+    let id = save_file(&file).await;
 
     let user_image = crate::model::user_image::ActiveModel {
         id: NotSet,
@@ -91,7 +85,7 @@ pub async fn post_picture(
         create_time: NotSet,
         update_time: NotSet,
     };
-    let user_image = user_image.insert(&state.db).await.unwrap();
+    let user_image = user_image.insert(&*DATABASE).await.unwrap();
 
     let size = file.len() as f64 / 1024.0; // KB
 
@@ -100,14 +94,14 @@ pub async fn post_picture(
     // ----------------------  => ------------------------------
     // | a  |   3   |   b   |     | b  |     2     |     c     |
     // ----------------------     ------------------------------
-    let (mut parent, mut depth) = add_size_to_folder(&state.db, dir, size).await;
+    let (mut parent, mut depth) = add_size_to_folder(&*DATABASE, dir, size).await;
 
     while let Some(a) = parent {
-        let (new_parent, new_depth) = add_size_to_folder(&state.db, a, size).await;
+        let (new_parent, new_depth) = add_size_to_folder(&*DATABASE, a, size).await;
 
         if new_depth != depth - 1 {
             error!("Invalid depth: {} in {} (indexed from depth {})", new_depth, a, depth);
-            add_size_to_folder(&state.db, user.root, size).await;
+            add_size_to_folder(&*DATABASE, user.root, size).await;
             break;
         }
 

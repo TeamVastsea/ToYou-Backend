@@ -1,7 +1,5 @@
 use std::cmp::min;
-use std::sync::Arc;
 
-use axum::extract::State;
 use axum::http::HeaderMap;
 use axum::Json;
 use chrono::{Days, Utc};
@@ -9,15 +7,15 @@ use sea_orm::{ActiveModelTrait, NotSet};
 use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
 
-use crate::ServerState;
+use crate::DATABASE;
 use crate::service::error::ErrorMessage;
 use crate::service::share::content::ContentType;
 use crate::service::user::level::LevelInfo;
 use crate::service::user::login::login_by_token;
 use crate::service::user::password::generate_password_hash;
 
-pub async fn create_share(State(state): State<Arc<ServerState>>, headers: HeaderMap, Json(body): Json<CreateShareRequest>) -> Result<String, ErrorMessage> {
-    let user_id = login_by_token(&state.db, headers).await
+pub async fn create_share(headers: HeaderMap, Json(body): Json<CreateShareRequest>) -> Result<String, ErrorMessage> {
+    let user_id = login_by_token(headers).await
         .ok_or(ErrorMessage::InvalidToken)?;
 
     for content in body.content.iter() {
@@ -29,7 +27,7 @@ pub async fn create_share(State(state): State<Arc<ServerState>>, headers: Header
     let level: LevelInfo = user_id.level.into_iter()
         .map(|e| {
             let raw: Vec<i64> = serde_json::from_str(&e).unwrap();
-            LevelInfo::try_from(raw).unwrap_or_else(|e| LevelInfo::get_free_level())
+            LevelInfo::try_from(raw).unwrap_or_else(|_| LevelInfo::get_free_level())
         }).max().unwrap_or_else(|| LevelInfo::get_free_level());
     let max_level = level.get_max_share_level();
     let share_level = min(max_level as u8, body.mode as u8);
@@ -48,7 +46,7 @@ pub async fn create_share(State(state): State<Arc<ServerState>>, headers: Header
         valid_time: Set(Utc::now().checked_add_days(Days::new(7)).unwrap().naive_local()),
     };
 
-    return Ok(share.insert(&state.db).await.unwrap().id.to_string());
+    return Ok(share.insert(&*DATABASE).await.unwrap().id.to_string());
 }
 
 #[derive(Deserialize)]
