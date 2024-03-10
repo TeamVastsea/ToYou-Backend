@@ -2,7 +2,7 @@ name: Backend Server CI
 
 on:
   push:
-    branches: [ rust ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
