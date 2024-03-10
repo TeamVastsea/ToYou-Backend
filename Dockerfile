@@ -19,7 +19,7 @@ RUN cargo build --release
 # build slim image
 FROM debian:bookworm-slim AS runtime
 WORKDIR /app
-COPY --from=builder /app/target/release/toyou-backend /home/toyou-backend
+COPY --from=builder /app/target/release/toyou-backend /usr/app/toyou-backend
 
 RUN \
   apt-get update && \
