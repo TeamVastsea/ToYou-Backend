@@ -92,7 +92,6 @@ impl Config {
             .find(|(key, _)| key == "CONFIG_PATH")
             .map(|(_, value)| value)
             .unwrap_or("config.toml".to_string());
-        println!("Loading config from {config_path}");
 
         let mut raw_config = String::new();
         let mut file = OpenOptions::new()
@@ -102,6 +101,7 @@ impl Config {
             .open(&config_path)
             .expect(format!("Cannot open {config_path}").as_str());
         file.read_to_string(&mut raw_config).unwrap();
+        println!("Loading config from {:?}", std::fs::canonicalize(&config_path).unwrap());
 
         let config: Config = toml::from_str(&raw_config).unwrap();
 
