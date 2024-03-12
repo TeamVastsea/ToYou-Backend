@@ -30,4 +30,4 @@ RUN \
   apt-get autoclean && \
   rm -rf /var/lib/apt/lists/*
 
-CMD ["/usr/app/toyou-backend"]
+CMD ["cd /usr/app", "/usr/app/toyou-backend"]
