@@ -1,3 +1,4 @@
+use std::env::vars;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 
@@ -87,13 +88,19 @@ fn generate_aliyun_setting() -> AliyunConfig {
 
 impl Config {
     pub fn new() -> Self {
+        let config_path = vars()
+            .find(|(key, _)| key == "CONFIG_PATH")
+            .map(|(_, value)| value)
+            .unwrap_or("config.toml".to_string());
+        println!("Loading config from {config_path}");
+
         let mut raw_config = String::new();
         let mut file = OpenOptions::new()
             .read(true)
             .write(true)
             .create(true)
-            .open("config.toml")
-            .expect("Cannot open 'config.toml'");
+            .open(&config_path)
+            .expect(format!("Cannot open {config_path}").as_str());
         file.read_to_string(&mut raw_config).unwrap();
 
         let config: Config = toml::from_str(&raw_config).unwrap();
