@@ -40,19 +40,20 @@ mod config;
 mod model;
 mod service;
 
-lazy_static!{
+lazy_static! {
     static ref CONFIG: Config = Config::new();
     static ref DATABASE: DatabaseConnection = {
         let mut opt = ConnectOptions::new(&CONFIG.connection.db_uri);
         opt.sqlx_logging(true);
         opt.sqlx_logging_level(LevelFilter::Debug);
-        futures::executor::block_on(Database::connect(opt)).unwrap()
+        futures::executor::block_on(Database::connect(opt)).unwrap_or_else(|e| {
+            panic!("Failed to connect to database '{}': {}", CONFIG.connection.db_uri, e)
+        })
     };
 }
 
 #[tokio::main]
 async fn main() {
-
     let env_filter =
         EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new(&CONFIG.trace_level));
     let file_appender = RollingFileAppender::builder()
