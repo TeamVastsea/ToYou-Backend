@@ -45,11 +45,11 @@ async fn write_file(file_content: impl AsRef<[u8]>) -> Option<String> {
 }
 
 /// Delete a file from disk
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `file_id`: The id of the file
-/// 
+///
 /// returns: ()
 async fn delete_file(file_id: &str) {
     let mut path = PathBuf::from("./files");
@@ -63,15 +63,15 @@ async fn delete_file(file_id: &str) {
 
 
 /// Read a file from disk
-/// 
+///
 /// # Arguments 
-/// 
+///
 /// * `file_id`: The id of the file
-/// 
+///
 /// returns: Option<DynamicImage>: Some(DynamicImage) if the file is read successfully, None if not exist or format not recognized
 ///   
 /// # Examples 
-/// 
+///
 /// ```
 /// let file = read_image("test").unwrap();
 /// ```
@@ -83,7 +83,7 @@ pub async fn read_image(file_id: &str) -> Option<DynamicImage> {
     if !try_exists(&path).await.unwrap() {
         return None;
     }
-    
+
     let file = ImageReader::open(path);
     if file.is_err() {
         return None;
@@ -93,24 +93,24 @@ pub async fn read_image(file_id: &str) -> Option<DynamicImage> {
         return None;
     }
     let file = file.unwrap().decode();
-    if file.is_err() { 
+    if file.is_err() {
         return None;
     }
-    
+
     Some(file.unwrap())
 }
 
 /// Save a file to disk and update the database
-/// 
+///
 /// # Arguments 
-/// 
+///
 /// * `db`: The database connection
 /// * `file_content`: The content of file
-/// 
+///
 /// returns: String:  the id of the file
-/// 
+///
 /// # Examples 
-/// 
+///
 /// ```
 /// let file_content = fs::read("path/to/file").await.unwrap();
 /// let file_id = save_file(db, file_content).await;
@@ -136,26 +136,26 @@ pub async fn save_file(file_content: impl AsRef<[u8]>) -> String {
         image.used = Set(image.used.unwrap() + 1);
         image.save(&*DATABASE).await.unwrap();
     }
-    
+
     return id;
 }
 
 /// Remove a file from disk and update the database
-/// 
+///
 /// # Arguments
-/// 
+///
 /// * `user_image_id`: The id of the user_image
-/// 
+///
 /// returns: ()
-/// 
+///
 pub async fn remove_file(image_id: &str) {
     let image = crate::model::image::Entity::find_by_id(image_id)
         .one(&*DATABASE)
         .await
         .unwrap()
         .unwrap();
-    
-    if image.used - 1 == 0 { 
+
+    if image.used - 1 == 0 {
         image.into_active_model().delete(&*DATABASE).await.unwrap();
         delete_file(image_id).await;
     } else {

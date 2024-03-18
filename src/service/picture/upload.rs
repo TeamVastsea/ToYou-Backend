@@ -11,7 +11,7 @@ use crate::service::error::ErrorMessage;
 use crate::service::picture::file::save_file;
 use crate::service::user::login::login_by_token;
 
-pub async fn post_picture(headers: HeaderMap, mut multipart: Multipart, ) -> Result<String, ErrorMessage> {
+pub async fn post_picture(headers: HeaderMap, mut multipart: Multipart) -> Result<String, ErrorMessage> {
     let mut file: Option<Bytes> = None;
     let mut file_name: Option<String> = None;
     let user = login_by_token(headers).await
