@@ -18,14 +18,6 @@ use crate::model::prelude::Image;
 /// * `file_content`: The content of file
 ///
 /// returns: Option<String>: Some(id) if the file is saved successfully, None if error occurs
-///
-/// # Examples
-///
-/// ```
-/// let file_content = fs::read("path/to/file").await.unwrap();
-/// let file_id = save_file(file_content).await;
-/// println!("{file_id:?}");
-/// ```
 async fn write_file(file_content: impl AsRef<[u8]>) -> Option<String> {
     let mut hasher = blake3::Hasher::new();
     hasher.update(file_content.as_ref());
@@ -50,6 +42,23 @@ async fn write_file(file_content: impl AsRef<[u8]>) -> Option<String> {
         .unwrap();
 
     Some(id)
+}
+
+/// Delete a file from disk
+/// 
+/// # Arguments
+/// 
+/// * `file_id`: The id of the file
+/// 
+/// returns: ()
+async fn delete_file(file_id: &str) {
+    let mut path = PathBuf::from("./files");
+    path.push((&file_id[0..2]).to_string().to_ascii_lowercase());
+    path.push((&file_id).to_string());
+
+    if try_exists(&path).await.unwrap() {
+        tokio::fs::remove_file(&path).await.unwrap();
+    }
 }
 
 
@@ -129,4 +138,29 @@ pub async fn save_file(file_content: impl AsRef<[u8]>) -> String {
     }
     
     return id;
+}
+
+/// Remove a file from disk and update the database
+/// 
+/// # Arguments
+/// 
+/// * `user_image_id`: The id of the user_image
+/// 
+/// returns: ()
+/// 
+pub async fn remove_file(image_id: &str) {
+    let image = crate::model::image::Entity::find_by_id(image_id)
+        .one(&*DATABASE)
+        .await
+        .unwrap()
+        .unwrap();
+    
+    if image.used - 1 == 0 { 
+        image.into_active_model().delete(&*DATABASE).await.unwrap();
+        delete_file(image_id).await;
+    } else {
+        let mut image = image.into_active_model();
+        image.used = Set(image.used.unwrap() - 1);
+        image.save(&*DATABASE).await.unwrap();
+    }
 }

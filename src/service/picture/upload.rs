@@ -119,7 +119,7 @@ async fn add_size_to_folder(db: &sea_orm::DatabaseConnection, folder_id: i64, si
         .unwrap()
         .unwrap();
     let mut active_folder = folder.clone().into_active_model();
-    active_folder.size = Set(active_folder.size.unwrap() + size);
+    active_folder.size = Set(folder.size + size);
     active_folder.save(db).await.unwrap();
 
     (folder.parent, folder.depth)

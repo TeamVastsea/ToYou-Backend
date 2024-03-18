@@ -27,6 +27,7 @@ use crate::config::{Config, rename_log};
 use crate::service::folder::create::create_folder;
 use crate::service::folder::get::get_folder_info;
 use crate::service::folder::rename::rename_folder;
+use crate::service::picture::delete::delete_picture;
 use crate::service::picture::get::{get_picture_preview, list_picture};
 use crate::service::picture::rename::rename_picture;
 use crate::service::picture::upload::post_picture;
@@ -96,7 +97,7 @@ async fn main() {
         .route("/user", post(register_user).get(login_user))
         .route("/user/phone/:id", get(get_user_phone))
         .route("/user/code/phone", get(get_sms))
-        .route("/picture", post(post_picture).get(list_picture).patch(rename_picture))
+        .route("/picture", post(post_picture).get(list_picture).patch(rename_picture).delete(delete_picture))
         .route("/picture/preview", get(get_picture_preview))
         .route("/folder", post(create_folder).get(get_folder_info).patch(rename_folder))
         .route("/share", post(create_share).get(list_all_share))
