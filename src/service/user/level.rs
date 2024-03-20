@@ -1,4 +1,5 @@
 use std::cmp::Ordering;
+use std::fmt::{Display, Formatter};
 
 use chrono::{DateTime, TimeZone, Utc};
 use serde::{Deserialize, Serialize};
@@ -15,16 +16,16 @@ impl LevelInfo {
         let now = Utc::now();
         self.start < now && self.end > now
     }
-    
+
     pub fn get_max_share_level(&self) -> ShareLevel {
-        match self.level { 
+        match self.level {
             Level::Free => ShareLevel::Watermarked,
             Level::Started => ShareLevel::Compressed,
             Level::Advanced => ShareLevel::Compressed,
             Level::Professional => ShareLevel::Original,
         }
     }
-    
+
     pub fn get_free_level() -> Self {
         LevelInfo {
             level: Level::Free,
@@ -70,6 +71,17 @@ pub enum Level {
     Professional,
 }
 
+impl Display for Level {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Level::Free => write!(f, "免费"),
+            Level::Started => write!(f, "入门"),
+            Level::Advanced => write!(f, "进阶"),
+            Level::Professional => write!(f, "专业"),
+        }
+    }
+}
+
 impl From<u8> for Level {
     fn from(value: u8) -> Self {
         match value {
@@ -78,6 +90,18 @@ impl From<u8> for Level {
             2 => Level::Advanced,
             3 => Level::Professional,
             _ => Level::Free,
+        }
+    }
+}
+
+
+impl Level {
+    pub fn get_price(&self) -> i32 {
+        match self {
+            Level::Free => 0,
+            Level::Started => 3000,
+            Level::Advanced => 5000,
+            Level::Professional => 15000,
         }
     }
 }
@@ -120,7 +144,6 @@ impl TryFrom<i16> for ShareLevel {
             _ => Err(std::io::Error::new(std::io::ErrorKind::InvalidData, "Invalid share level")),
         }
     }
-    
 }
 
 impl From<LevelInfo> for Vec<i64> {

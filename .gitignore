@@ -14,3 +14,7 @@ pictures/
 release/
 profile/
 config.toml
+
+wx_private.pem
+wx_public.pem
+wx-cert.pem

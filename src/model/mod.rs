@@ -7,3 +7,4 @@ pub mod image;
 pub mod share;
 pub mod user;
 pub mod user_image;
+pub mod trade;

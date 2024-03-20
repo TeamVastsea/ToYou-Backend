@@ -1,4 +1,3 @@
-use std::env::vars;
 use std::fs::OpenOptions;
 use std::io::{Read, Write};
 
@@ -55,8 +54,18 @@ pub struct AliyunConfig {
 pub struct WeChatConfig {
     #[serde_inline_default(String::from("appid"))]
     pub app_id: String,
-    #[serde_inline_default(String::from("secret"))]
-    pub app_secret: String,
+    #[serde_inline_default(String::from("mch"))]
+    pub mch_id: String,
+    #[serde_inline_default(String::from("serial"))]
+    pub serial: String,
+    #[serde_inline_default(String::from("key"))]
+    pub key: String,
+    #[serde_inline_default(String::from("./wx_private.pem"))]
+    pub private_key: String,
+    #[serde_inline_default(String::from("./wx_public.pem"))]
+    pub public_key: String,
+    #[serde_inline_default(String::from("https://api.toyou.cc/wechat/callback"))]
+    pub call_back_url: String
 }
 
 fn generate_connection_setting() -> ConnectionConfig {
@@ -73,7 +82,12 @@ fn generate_connection_setting() -> ConnectionConfig {
 fn generate_wechat_setting() -> WeChatConfig {
     WeChatConfig {
         app_id: "appid".to_string(),
-        app_secret: "secret".to_string(),
+        mch_id: "mch".to_string(),
+        serial: "serial".to_string(),
+        key: "key".to_string(),
+        private_key: "./wx_private.pem".to_string(),
+        public_key: "./wx_public.pem".to_string(),
+        call_back_url: "https://api.toyou.cc/wechat/callback".to_string(),
     }
 }
 
@@ -88,20 +102,14 @@ fn generate_aliyun_setting() -> AliyunConfig {
 
 impl Config {
     pub fn new() -> Self {
-        let config_path = vars()
-            .find(|(key, _)| key == "CONFIG_PATH")
-            .map(|(_, value)| value)
-            .unwrap_or("config.toml".to_string());
-
         let mut raw_config = String::new();
         let mut file = OpenOptions::new()
             .read(true)
             .write(true)
             .create(true)
-            .open(&config_path)
-            .expect(format!("Cannot open {config_path}").as_str());
+            .open("config.toml")
+            .expect("Cannot open 'config.toml'");
         file.read_to_string(&mut raw_config).unwrap();
-        println!("Loading config from {:?}", std::fs::canonicalize(&config_path).unwrap());
 
         let config: Config = toml::from_str(&raw_config).unwrap();
 
