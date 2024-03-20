@@ -16,7 +16,7 @@ lazy_static! {
         &WECHAT_PRIVATE,
         &CONFIG.wechat.serial,
         &CONFIG.wechat.key,
-        &"https://api.ituyou.cc/par/wechat".to_string()
+        &CONFIG.wechat.call_back_url,
     );
 }
 

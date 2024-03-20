@@ -11,7 +11,7 @@ use crate::service::trade::{TradeStatus, WECHAT_PAY_CLIENT, WECHAT_PUBLIC};
 
 pub async fn wechat_pay_recall(header_map: HeaderMap, body: String) -> Json<WechatNoticeResponse> {
     let request: WechatPayNotify = serde_json::from_str(&body).unwrap();
-    
+
     //verify trade status
     let nonce = request.resource.nonce;
     let chiphertext = request.resource.ciphertext;
@@ -19,9 +19,7 @@ pub async fn wechat_pay_recall(header_map: HeaderMap, body: String) -> Json<Wech
     let result = WECHAT_PAY_CLIENT.decrypt_paydata(&chiphertext, &nonce, &associated_data).unwrap();
     let id = result.out_trade_no.clone();
     info!("Wechat pay recall: {result:?}");
-    let mut trade = Trade::find_by_id(id).one(&*crate::DATABASE).await.unwrap().unwrap().into_active_model();
 
-    let cert = WECHAT_PAY_CLIENT.certificates().await.unwrap();
     //verify signature
     if WECHAT_PAY_CLIENT.verify_signatrue(
         &WECHAT_PUBLIC,
@@ -35,7 +33,8 @@ pub async fn wechat_pay_recall(header_map: HeaderMap, body: String) -> Json<Wech
             message: "签名错误".to_string(),
         });
     }
-    
+
+    let mut trade = Trade::find_by_id(id).one(&*crate::DATABASE).await.unwrap().unwrap().into_active_model();
     trade.status = Set(TradeStatus::Paid as i16);
     trade.pay_time = Set(Some(chrono::Local::now().naive_local()));
     trade.save(&*crate::DATABASE).await.unwrap();
