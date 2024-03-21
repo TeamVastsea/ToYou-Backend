@@ -1,8 +1,11 @@
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 
-use chrono::{DateTime, TimeZone, Utc};
+use chrono::{DateTime, Months, TimeZone, Utc};
+use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, Set};
 use serde::{Deserialize, Serialize};
+
+use crate::model::prelude::User;
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LevelInfo {
@@ -154,6 +157,23 @@ impl From<LevelInfo> for Vec<i64> {
             value.end.timestamp(),
         ]
     }
+}
+
+pub async fn add_level_to_user(user_id: i64, level: Level, period: i16, start_time: DateTime<Utc>) -> Result<(), String> {
+    let level_info = LevelInfo {
+        level,
+        start: start_time,
+        end: start_time.checked_add_months(Months::new(period as u32)).unwrap(),
+    };
+    let user = User::find_by_id(user_id).one(&*crate::DATABASE).await.unwrap().ok_or("Cannot fond user".to_string())?;
+    let mut levels = user.level.clone();
+    levels.push(serde_json::to_string(&level_info).unwrap());
+
+    let mut user = user.into_active_model();
+    user.level = Set(levels);
+    user.save(&*crate::DATABASE).await.unwrap();
+
+    Ok(())
 }
 
 #[test]
