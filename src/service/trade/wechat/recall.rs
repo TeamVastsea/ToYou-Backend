@@ -4,7 +4,7 @@ use base64::Engine;
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel};
 use sea_orm::ActiveValue::Set;
 use serde::Serialize;
-use tracing::{error, info};
+use tracing::{debug, error, info};
 use wechat_pay_rust_sdk::model::WechatPayNotify;
 use wechat_pay_rust_sdk::pay::PayNotifyTrait;
 use wechat_pay_rust_sdk::response::Certificate;
@@ -24,14 +24,21 @@ pub async fn wechat_pay_recall(header_map: HeaderMap, body: String) -> Json<Wech
     let result = WECHAT_PAY_CLIENT.decrypt_paydata(&chiphertext, &nonce, &associated_data).unwrap();
     let id = result.out_trade_no.clone();
     info!("Wechat pay recall: {result:?}");
+    
+    let pub_key = get_public_key().await;
+    let timestamp = header_map.get("Wechatpay-Timestamp").unwrap().to_str().unwrap();
+    let nonce = header_map.get("Wechatpay-Nonce").unwrap().to_str().unwrap();
+    let signature = header_map.get("Wechatpay-Signature").unwrap().to_str().unwrap();
+    let body = body.as_str();
+    debug!("Wechat pay recall: {pub_key:?} {timestamp:?} {nonce:?} {signature:?} {body:?}");
 
     //verify signature
     if WECHAT_PAY_CLIENT.verify_signatrue(
-        &get_public_key().await,
-        header_map.get("Wechatpay-Timestamp").unwrap().to_str().unwrap(),
-        header_map.get("Wechatpay-Nonce").unwrap().to_str().unwrap(),
-        header_map.get("Wechatpay-Signature").unwrap().to_str().unwrap(),
-        serde_json::to_string(&body).unwrap().as_str(),
+        &pub_key,
+        &timestamp,
+        &nonce,
+        &signature,
+        &body,
     ).map_err(|e| {error!("{}", e.to_string())}).is_err() {
         return Json(WechatNoticeResponse {
             code: "FAIL".to_string(),
