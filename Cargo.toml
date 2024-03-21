@@ -51,6 +51,7 @@ migration = { path = "migration" }
 #third party
 lsys-lib-sms = "0.1.0"
 wechat-pay-rust-sdk = { version = "0.2.14", features = ["debug-print"] }
+x509-parser = "0.16.0"
 
 [build-dependencies]
 shadow-rs = "0.24.1"
