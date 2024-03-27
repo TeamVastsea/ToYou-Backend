@@ -29,8 +29,12 @@ pub async fn create_share(headers: HeaderMap, Json(body): Json<CreateShareReques
             let raw: Vec<i64> = serde_json::from_str(&e).unwrap();
             LevelInfo::try_from(raw).unwrap_or_else(|_| LevelInfo::get_free_level())
         }).max().unwrap_or_else(|| LevelInfo::get_free_level());
-    let max_level = level.get_max_share_level();
-    let share_level = min(max_level as u8, body.mode as u8);
+    let max_level = level.level.get_max_share_level();
+    let share_level = body.mode as u8;
+    
+    if share_level > max_level as u8 { 
+        return Err(ErrorMessage::PermissionDenied);
+    }
     let password = match body.password {
         None => { None }
         Some(a) => { Some(generate_password_hash(&a)) }
