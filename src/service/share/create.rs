@@ -1,5 +1,3 @@
-use std::cmp::min;
-
 use axum::http::HeaderMap;
 use axum::Json;
 use chrono::{Days, Utc};
@@ -31,8 +29,8 @@ pub async fn create_share(headers: HeaderMap, Json(body): Json<CreateShareReques
         }).max().unwrap_or_else(|| LevelInfo::get_free_level());
     let max_level = level.level.get_max_share_level();
     let share_level = body.mode as u8;
-    
-    if share_level > max_level as u8 { 
+
+    if share_level > max_level as u8 {
         return Err(ErrorMessage::PermissionDenied);
     }
     let password = match body.password {
