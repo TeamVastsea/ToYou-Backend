@@ -11,7 +11,7 @@ use tokio::fs::try_exists;
 use crate::DATABASE;
 use crate::model::prelude::Image;
 
-/// Writw a file to disk and generate the id of the file
+/// Write a file to disk and generate the id of the file
 ///
 /// # Arguments
 ///

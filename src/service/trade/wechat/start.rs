@@ -60,7 +60,11 @@ pub async fn start_wechat(userid: i64, level: Level, period: i32, start_date: Da
     };
     trade.insert(&*DATABASE).await.unwrap();
 
-    return (true, format!("{body:?}"))
+    if body.code_url.is_none() {
+        return (false, format!("Cannot get url: {:?}, code {:?}", body.message, body.code));
+    }
+    
+    return (true, body.code_url.unwrap())
 }
 
 #[test]

@@ -33,6 +33,7 @@ use crate::service::picture::rename::rename_picture;
 use crate::service::picture::upload::post_picture;
 use crate::service::share::create::create_share;
 use crate::service::share::get::{check_share_password, get_share_folder, get_share_image, get_share_info, list_all_share};
+use crate::service::trade::wechat::creat_wechat_pay;
 use crate::service::trade::wechat::recall::wechat_pay_recall;
 use crate::service::user::login::login_user;
 use crate::service::user::phone::{get_sms, get_user_phone};
@@ -106,6 +107,7 @@ async fn main() {
         .route("/share/password", get(check_share_password))
         .route("/share/image", get(get_share_image))
         .route("/share/folder", get(get_share_folder))
+        .route("/pay/wechat", post(creat_wechat_pay))
         .route("/pay/wechat/callback", post(wechat_pay_recall))
         .route("/ping", get(ping))
         .layer(trace_layer)
