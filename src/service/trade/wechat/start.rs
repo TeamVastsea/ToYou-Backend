@@ -36,7 +36,7 @@ pub async fn start_wechat(userid: i64, level: Level, period: i32, start_date: Na
     let date = Local::now().checked_add_signed(TimeDelta::minutes(10)).unwrap();
     let trade_id = generate_trade_id("WECHAT").to_string();
     let years = period / 12;
-    let amount = if userid == 1 && userid == 2 {
+    let amount = if userid == 1 || userid == 2 {
         1
     } else {
         level.get_price() * (period - years * 2)
