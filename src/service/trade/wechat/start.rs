@@ -77,9 +77,9 @@ fn test_generate_trade_id() {
     assert!(id.starts_with("TESTID"));
     assert_eq!(id.len(), 32);
 
-    let url = tokio::runtime::Runtime::new().unwrap().block_on(start_wechat(1, Level::Started, 12, Utc::now()));
-    println!("trade_id: {id}");
-    println!("pay_url: {url:?}");
-    let cert = tokio::runtime::Runtime::new().unwrap().block_on(WECHAT_PAY_CLIENT.certificates());
-    println!("{:?}", cert);
+    // let url = tokio::runtime::Runtime::new().unwrap().block_on(start_wechat(1, Level::Started, 12, Utc::now()));
+    // println!("trade_id: {id}");
+    // println!("pay_url: {url:?}");
+    // let cert = tokio::runtime::Runtime::new().unwrap().block_on(WECHAT_PAY_CLIENT.certificates());
+    // println!("{:?}", cert);
 }

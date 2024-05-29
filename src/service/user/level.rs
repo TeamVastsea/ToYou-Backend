@@ -178,12 +178,12 @@ pub async fn add_level_to_user(user_id: i64, level: Level, period: i16, start_ti
 
 #[test]
 fn test_level_serialize() {
-    let level_str = r#"{"level":"Started","start":"2024-02-20T07:57:52Z","end":"2025-02-27T07:57:52Z"}"#;
+    let level_str = r#"{"level":"Started","start":"2024-02-20","end":"2025-02-27"}"#;
     let level_info: LevelInfo = serde_json::from_str(level_str).unwrap();
 
     assert_eq!(serde_json::to_string(&level_info).unwrap(), level_str);
 
-    let level_array_str = r#"[1,1708415872,1709020672]"#;
+    let level_array_str = r#"[1,738936,739309]"#;
     let level_array: Vec<i64> = serde_json::from_str(level_array_str).unwrap();
     let level_info2 = LevelInfo::try_from(level_array).unwrap();
 
