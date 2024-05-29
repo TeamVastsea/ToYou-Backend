@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::fmt::{Display, Formatter};
 
-use chrono::{DateTime, Months, TimeZone, Utc};
+use chrono::{Datelike, Months, NaiveDate, Utc};
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, Set};
 use serde::{Deserialize, Serialize};
 
@@ -10,21 +10,21 @@ use crate::model::prelude::User;
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct LevelInfo {
     pub level: Level,
-    start: DateTime<Utc>,
-    end: DateTime<Utc>,
+    start: NaiveDate,
+    end: NaiveDate,
 }
 
 impl LevelInfo {
     pub fn is_valid(&self) -> bool {
-        let now = Utc::now();
+        let now = Utc::now().date_naive();
         self.start < now && self.end > now
     }
 
     pub fn get_free_level() -> Self {
         LevelInfo {
             level: Level::Free,
-            start: Utc.timestamp_opt(0, 0).unwrap(),
-            end: Utc.timestamp_opt(0, 0).unwrap(),
+            start: NaiveDate::MIN,
+            end: NaiveDate::MAX,
         }
     }
 
@@ -46,8 +46,8 @@ impl TryFrom<Vec<i64>> for LevelInfo {
 
         Ok(LevelInfo {
             level: Level::from(value[0] as u8),
-            start: Utc.timestamp_opt(value[1], 0).unwrap(),
-            end: Utc.timestamp_opt(value[2], 0).unwrap(),
+            start: NaiveDate::from_num_days_from_ce_opt(value[1] as i32).unwrap(),
+            end: NaiveDate::from_num_days_from_ce_opt(value[2] as i32).unwrap(),
         })
     }
 }
@@ -56,8 +56,8 @@ impl From<LevelInfo> for Vec<i64> {
     fn from(value: LevelInfo) -> Self {
         vec![
             value.level as i64,
-            value.start.timestamp(),
-            value.end.timestamp(),
+            value.start.num_days_from_ce() as i64,
+            value.end.num_days_from_ce() as i64,
         ]
     }
 }
@@ -84,7 +84,6 @@ impl Ord for LevelInfo {
         self.level.cmp(&other.level)
     }
 }
-
 
 
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
@@ -139,7 +138,6 @@ impl From<u8> for Level {
 }
 
 
-
 #[derive(Clone, Debug, Serialize, Deserialize, Ord, PartialOrd, Eq, PartialEq)]
 pub enum ShareLevel {
     Original = 0,
@@ -161,7 +159,7 @@ impl TryFrom<i16> for ShareLevel {
 }
 
 
-pub async fn add_level_to_user(user_id: i64, level: Level, period: i16, start_time: DateTime<Utc>) -> Result<(), String> {
+pub async fn add_level_to_user(user_id: i64, level: Level, period: i16, start_time: NaiveDate) -> Result<(), String> {
     let level_info: Vec<i64> = LevelInfo {
         level,
         start: start_time,

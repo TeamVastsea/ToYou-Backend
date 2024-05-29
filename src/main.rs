@@ -1,6 +1,8 @@
+use std::iter::once;
 use axum::{http, Router};
 use axum::body::Body;
 use axum::extract::DefaultBodyLimit;
+use axum::http::header::AUTHORIZATION;
 use axum::http::Request;
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
@@ -10,9 +12,11 @@ use sea_orm::{ConnectOptions, Database, DatabaseConnection};
 use serde_json::json;
 use shadow_rs::shadow;
 use tower_http::catch_panic::CatchPanicLayer;
+use tower_http::classify::StatusInRangeAsFailures;
 use tower_http::cors::CorsLayer;
-use tower_http::trace::TraceLayer;
-use tracing::{debug, info, Span, warn};
+use tower_http::sensitive_headers::SetSensitiveHeadersLayer;
+use tower_http::trace::{DefaultOnFailure, TraceLayer};
+use tracing::{debug, info, Level, Span, warn};
 use tracing::log::LevelFilter;
 use tracing_appender::non_blocking;
 use tracing_appender::rolling::{RollingFileAppender, Rotation};
@@ -48,7 +52,7 @@ lazy_static! {
     static ref DATABASE: DatabaseConnection = {
         let mut opt = ConnectOptions::new(&CONFIG.connection.db_uri);
         opt.sqlx_logging(true);
-        opt.sqlx_logging_level(LevelFilter::Debug);
+        opt.sqlx_logging_level(LevelFilter::Info);
         futures::executor::block_on(Database::connect(opt)).unwrap_or_else(|e| {
             panic!("Failed to connect to database '{}': {}", CONFIG.connection.db_uri, e)
         })
@@ -85,16 +89,6 @@ async fn main() {
 
     Migrator::up(&*DATABASE, None).await.unwrap();
 
-    let trace_layer = TraceLayer::new_for_http()
-        .on_request(|request: &Request<Body>, _span: &Span| {
-            debug!("{} {}", request.method(), request.uri().path());
-        })
-        .on_response(
-            |response: &http::Response<Body>, _latency: std::time::Duration, _span: &Span| {
-                debug!("{}", response.status());
-            },
-        );
-
     let app = Router::new()
         .route("/user", post(register_user).get(login_user))
         .route("/user/phone/:id", get(get_user_phone))
@@ -110,12 +104,15 @@ async fn main() {
         .route("/pay/wechat", post(creat_wechat_pay))
         .route("/pay/wechat/callback", post(wechat_pay_recall))
         .route("/ping", get(ping))
-        .layer(trace_layer)
+        .layer(TraceLayer::new(
+            StatusInRangeAsFailures::new(400..=599).into_make_classifier()
+        ))
         .layer(CorsLayer::permissive())
         .layer(CatchPanicLayer::new())
         .layer(DefaultBodyLimit::max(
             CONFIG.connection.max_body_size * 1024 * 1024,
-        ));
+        ))
+        .layer(SetSensitiveHeadersLayer::new(once(http::HeaderName::from_lowercase(b"token").unwrap())));
     let addr = CONFIG.connection.server_addr.parse().unwrap();
     info!("Listening: {addr}");
 

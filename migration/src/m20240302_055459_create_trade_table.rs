@@ -24,7 +24,7 @@ impl MigrationTrait for Migration {
                     .col(ColumnDef::new(Trade::Total).integer().not_null())
                     .col(ColumnDef::new(Trade::CreateTime).timestamp().default(Expr::current_timestamp()).not_null())
                     .col(ColumnDef::new(Trade::ValidTime).timestamp().not_null())
-                    .col(ColumnDef::new(Trade::StartTime).timestamp().not_null())
+                    .col(ColumnDef::new(Trade::StartTime).date().not_null())
                     .col(ColumnDef::new(Trade::PayTime).timestamp().null())
                     .to_owned(),
             )
