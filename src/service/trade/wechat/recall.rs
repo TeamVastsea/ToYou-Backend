@@ -41,7 +41,7 @@ pub async fn wechat_pay_recall(header_map: HeaderMap, body: String) -> Result<St
 
     //verify signature
     verify_signature(&pub_key, timestamp, nonce, signature, body)
-        .map_err(|e| format!(r#"{{"code": "FAIL", "message": "{}"}}"#, e.to_string())).unwrap();
+        .map_err(|e| format!(r#"{{"code": "FAIL", "message": "{}"}}"#, e.to_string()))?;
 
     let res = add_level_to_user(trade.user_id, Level::from(trade.level as u8), trade.period, trade.start_time).await;
     if res.is_err() {
