@@ -3,6 +3,7 @@ use std::time::Duration;
 use axum::extract::Query;
 use axum::http::HeaderMap;
 use axum::response::IntoResponse;
+use lazy_regex::regex;
 use lazy_static::lazy_static;
 use moka::future::Cache;
 use rand::Rng;
@@ -24,24 +25,35 @@ lazy_static! {
         .build();
 }
 
-
-
 pub async fn login_user(headers: HeaderMap, Query(request): Query<LoginRequest>) -> impl IntoResponse {
+    let phone_regex = regex!(r"^1[3-9]\d{9}$");
+    let email_regex = regex!(r"^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$");
     let mut need_token = false;
-    
+
     let user = if headers.contains_key("token") { //login with token
         debug!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
         login_by_token(headers).await
             .ok_or(ErrorMessage::InvalidToken)?
     } else { //login with username and password
         need_token = true;
-        let user = User::find().filter(crate::model::user::Column::Phone.eq(request.account)).one(&*DATABASE)
-            .await.unwrap().ok_or(ErrorMessage::LoginFailed)?;
+        let user = if phone_regex.is_match(&request.account) {
+            debug!("logging in with phone");
+            User::find().filter(crate::model::user::Column::Phone.eq(request.account)).one(&*DATABASE)
+                .await.unwrap()
+        } else if email_regex.is_match(&request.account) {
+            debug!("logging in with email");
+            User::find().filter(crate::model::user::Column::Email.eq(request.account)).one(&*DATABASE)
+                .await.unwrap()
+        } else {
+            debug!("logging in with username");
+            User::find().filter(crate::model::user::Column::Username.eq(request.account)).one(&*DATABASE)
+                .await.unwrap()
+        }.ok_or(ErrorMessage::LoginFailed)?;
 
         if !verify_password(&request.password, &user.password) {
             return Err(ErrorMessage::LoginFailed);
         }
-        
+
         user
     };
 
