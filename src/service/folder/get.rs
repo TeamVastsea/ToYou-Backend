@@ -1,14 +1,12 @@
 use std::collections::HashMap;
 
 use axum::extract::Query;
-use axum::http::HeaderMap;
 use sea_orm::EntityTrait;
 
 use crate::DATABASE;
 use crate::extractor::auth::AuthUser;
 use crate::model::prelude::Folder;
 use crate::service::error::ErrorMessage;
-use crate::service::user::login::login_by_token;
 
 pub async fn get_folder_info(AuthUser(user): AuthUser, Query(query): Query<HashMap<String, String>>) -> Result<String, ErrorMessage> {
     let query_id: i64 = query.get("id")

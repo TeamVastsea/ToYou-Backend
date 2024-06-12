@@ -10,7 +10,6 @@ use crate::extractor::auth::AuthUser;
 use crate::model::prelude::UserImage;
 use crate::service::error::ErrorMessage;
 use crate::service::picture::compress::ImageFile;
-use crate::service::user::login::login_by_token;
 
 pub async fn list_picture(AuthUser(user): AuthUser, Query(query): Query<ListPictureRequest>) -> impl IntoResponse {
     if query.size > 100 {

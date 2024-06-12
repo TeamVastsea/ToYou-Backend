@@ -1,4 +1,3 @@
-use axum::http::HeaderMap;
 use axum::Json;
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, NotSet};
 use sea_orm::ActiveValue::Set;
@@ -8,7 +7,6 @@ use crate::DATABASE;
 use crate::extractor::auth::AuthUser;
 use crate::model::prelude::Folder;
 use crate::service::error::ErrorMessage;
-use crate::service::user::login::login_by_token;
 
 pub async fn create_folder(AuthUser(user): AuthUser, Json(query): Json<CreateFolderRequest>) -> Result<(), ErrorMessage> {
     let parent = Folder::find_by_id(query.parent).one(&*DATABASE).await.unwrap()

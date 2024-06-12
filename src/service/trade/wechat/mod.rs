@@ -1,9 +1,8 @@
-use axum::http::HeaderMap;
 use axum::Json;
 use chrono::NaiveDate;
 use serde::Deserialize;
-use crate::extractor::auth::AuthUser;
 
+use crate::extractor::auth::AuthUser;
 use crate::service::error::ErrorMessage;
 use crate::service::trade::wechat::start::start_wechat;
 use crate::service::user::level::Level;

@@ -1,5 +1,5 @@
 use axum::async_trait;
-use axum::extract::{FromRequest, FromRequestParts};
+use axum::extract::FromRequestParts;
 use axum::http::request::Parts;
 
 use crate::service::error::ErrorMessage;
