@@ -6,15 +6,13 @@ use serde::Deserialize;
 use tracing::{error, info};
 
 use crate::DATABASE;
+use crate::extractor::auth::AuthUser;
 use crate::model::prelude::{Folder, Image, UserImage};
 use crate::service::error::ErrorMessage;
 use crate::service::picture::file::remove_file;
 
-pub async fn delete_picture(Query(picture_id): Query<DeletePictureRequest>, headers: HeaderMap) -> Result<String, ErrorMessage> {
+pub async fn delete_picture(Query(picture_id): Query<DeletePictureRequest>, AuthUser(user): AuthUser) -> Result<String, ErrorMessage> {
     info!("delete picture: {}", picture_id.image_id);
-
-    let user = crate::service::user::login::login_by_token(headers).await
-        .ok_or(ErrorMessage::InvalidToken)?;
 
     let user_picture = UserImage::find_by_id(picture_id.image_id)
         .one(&*crate::DATABASE)

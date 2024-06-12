@@ -5,13 +5,11 @@ use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
 
 use crate::DATABASE;
+use crate::extractor::auth::AuthUser;
 use crate::model::prelude::UserImage;
 use crate::service::error::ErrorMessage;
 
-pub async fn rename_picture(header_map: HeaderMap, Query(query): Query<RenamePictureRequest>) -> Result<String, ErrorMessage> {
-    let user = crate::service::user::login::login_by_token(header_map).await
-        .ok_or(ErrorMessage::InvalidToken)?;
-    
+pub async fn rename_picture(AuthUser(user): AuthUser, Query(query): Query<RenamePictureRequest>) -> Result<String, ErrorMessage> {
     let picture = UserImage::find_by_id(query.id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
     if picture.user_id != user.id { 
         return Err(ErrorMessage::PermissionDenied);

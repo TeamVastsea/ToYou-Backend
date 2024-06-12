@@ -1,21 +1,18 @@
 use axum::body::Bytes;
 use axum::extract::Multipart;
-use axum::http::HeaderMap;
 use sea_orm::{ActiveModelTrait, EntityTrait, IntoActiveModel, NotSet};
 use sea_orm::ActiveValue::Set;
 use tracing::{debug, error};
 
 use crate::DATABASE;
+use crate::extractor::auth::AuthUser;
 use crate::model::prelude::Folder;
 use crate::service::error::ErrorMessage;
 use crate::service::picture::file::save_file;
-use crate::service::user::login::login_by_token;
 
-pub async fn post_picture(headers: HeaderMap, mut multipart: Multipart) -> Result<String, ErrorMessage> {
+pub async fn post_picture(AuthUser(user): AuthUser, mut multipart: Multipart) -> Result<String, ErrorMessage> {
     let mut file: Option<Bytes> = None;
     let mut file_name: Option<String> = None;
-    let user = login_by_token(headers).await
-        .ok_or(ErrorMessage::InvalidToken)?;
     let mut resource_type = None;
     let mut dir = user.root;
 

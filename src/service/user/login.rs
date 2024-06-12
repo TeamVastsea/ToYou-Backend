@@ -32,7 +32,7 @@ pub async fn login_user(headers: HeaderMap, Query(request): Query<LoginRequest>)
 
     let user = if headers.contains_key("token") { //login with token
         debug!("Token: {}", headers.get("token").unwrap().to_str().unwrap());
-        login_by_token(headers).await
+        login_by_token(&headers).await
             .ok_or(ErrorMessage::InvalidToken)?
     } else { //login with username and password
         need_token = true;
@@ -97,7 +97,7 @@ pub async fn login_user(headers: HeaderMap, Query(request): Query<LoginRequest>)
     Ok((headers, serde_json::to_string(&user).unwrap()))
 }
 
-pub async fn login_by_token(header: HeaderMap) -> Option<crate::model::user::Model> {
+pub async fn login_by_token(header: &HeaderMap) -> Option<crate::model::user::Model> {
     if !header.contains_key("token") { return None; }
     let token = header.get("token").unwrap().to_str().unwrap();
     let uid = TOKEN_CACHE.get(token).await;

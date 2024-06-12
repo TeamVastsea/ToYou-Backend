@@ -44,6 +44,7 @@ use crate::service::user::register::register_user;
 mod config;
 mod model;
 mod service;
+mod extractor;
 
 lazy_static! {
     static ref CONFIG: Config = Config::new();

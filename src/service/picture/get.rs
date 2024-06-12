@@ -6,17 +6,16 @@ use sea_orm::{ColumnTrait, EntityTrait, Order, PaginatorTrait, QueryFilter, Quer
 use serde::{Deserialize, Serialize};
 
 use crate::DATABASE;
+use crate::extractor::auth::AuthUser;
 use crate::model::prelude::UserImage;
 use crate::service::error::ErrorMessage;
 use crate::service::picture::compress::ImageFile;
 use crate::service::user::login::login_by_token;
 
-pub async fn list_picture(header_map: HeaderMap, Query(query): Query<ListPictureRequest>) -> impl IntoResponse {
+pub async fn list_picture(AuthUser(user): AuthUser, Query(query): Query<ListPictureRequest>) -> impl IntoResponse {
     if query.size > 100 {
         return Err(ErrorMessage::SizeTooLarge);
     }
-    let user = login_by_token(header_map).await
-        .ok_or(ErrorMessage::InvalidToken)?;
 
     let pictures = UserImage::find()
         .filter(crate::model::user_image::Column::UserId.eq(user.id))
@@ -33,11 +32,8 @@ pub async fn list_picture(header_map: HeaderMap, Query(query): Query<ListPicture
     Ok(Json(response))
 }
 
-pub async fn get_picture_preview(header_map: HeaderMap, Query(query): Query<PictureGetPreviewRequest>)
+pub async fn get_picture_preview(AuthUser(user): AuthUser, Query(query): Query<PictureGetPreviewRequest>)
                                  -> Result<(HeaderMap, Vec<u8>), ErrorMessage> {
-    let user = login_by_token(header_map).await
-        .ok_or(ErrorMessage::InvalidToken)?;
-
     // let level: LevelInfo = user.level.into_iter()
     //     .map(|e| {
     //         let raw: Vec<i64> = serde_json::from_str(&e).unwrap();

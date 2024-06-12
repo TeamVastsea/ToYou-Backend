@@ -5,13 +5,12 @@ use sea_orm::ActiveValue::Set;
 use serde::Deserialize;
 
 use crate::DATABASE;
+use crate::extractor::auth::AuthUser;
 use crate::model::prelude::Folder;
 use crate::service::error::ErrorMessage;
 use crate::service::user::login::login_by_token;
 
-pub async fn create_folder(header_map: HeaderMap, Json(query): Json<CreateFolderRequest>) -> Result<(), ErrorMessage> {
-    let user = login_by_token(header_map).await.ok_or(ErrorMessage::InvalidToken)?;
-
+pub async fn create_folder(AuthUser(user): AuthUser, Json(query): Json<CreateFolderRequest>) -> Result<(), ErrorMessage> {
     let parent = Folder::find_by_id(query.parent).one(&*DATABASE).await.unwrap()
         .ok_or(ErrorMessage::InvalidParams("parent".to_string()))?;
 

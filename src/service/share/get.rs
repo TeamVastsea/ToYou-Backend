@@ -8,6 +8,7 @@ use sea_orm::prelude::Uuid;
 use serde::{Deserialize, Serialize};
 
 use crate::DATABASE;
+use crate::extractor::auth::AuthUser;
 use crate::model::prelude::{Folder, Share, User, UserImage};
 use crate::model::share::ShareInfo;
 use crate::service::error::ErrorMessage;
@@ -119,10 +120,7 @@ pub async fn get_share_folder(Query(query): Query<GetShareFolderRequest>) -> Res
     Ok(serde_json::to_string(&response).unwrap())
 }
 
-pub async fn list_all_share(headers: HeaderMap, Query(query): Query<ListShareRequest>) -> Result<String, ErrorMessage> {
-    let user = crate::service::user::login::login_by_token(headers).await
-        .ok_or(ErrorMessage::InvalidToken)?;
-
+pub async fn list_all_share(AuthUser(user): AuthUser, Query(query): Query<ListShareRequest>) -> Result<String, ErrorMessage> {
     if query.size > 100 {
         return Err(ErrorMessage::SizeTooLarge);
     }
