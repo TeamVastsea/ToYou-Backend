@@ -34,6 +34,8 @@ pub struct ConnectionConfig {
     pub ssl_key: String,
     #[serde_inline_default(2)]
     pub max_body_size: usize,
+    #[serde_inline_default(vec!["http://localhost:3000".into(), "https://itoyou.cc".into()])]
+    pub origins: Vec<String>,
 }
 
 #[serde_inline_default]
@@ -76,6 +78,7 @@ fn generate_connection_setting() -> ConnectionConfig {
         ssl_cert: "./cert.crt".to_string(),
         ssl_key: "./private.key".to_string(),
         max_body_size: 2,
+        origins: vec!["http://localhost:3000".into(), "https://itoyou.cc".into()],
     }
 }
 

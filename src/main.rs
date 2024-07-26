@@ -2,6 +2,7 @@ use std::iter::once;
 
 use axum::{http, Router};
 use axum::extract::DefaultBodyLimit;
+use axum::http::HeaderValue;
 use axum::routing::{get, post};
 use axum_server::tls_rustls::RustlsConfig;
 use chrono::Local;
@@ -87,6 +88,7 @@ async fn main() {
         .init();
 
     Migrator::up(&*DATABASE, None).await.unwrap();
+    let origins = CONFIG.connection.origins.clone().iter().map(|x| x.parse().unwrap()).collect::<Vec<HeaderValue>>();
 
     let app = Router::new()
         .route("/user", post(register_user).get(login_user))
@@ -106,7 +108,7 @@ async fn main() {
         .layer(TraceLayer::new(
             StatusInRangeAsFailures::new(400..=599).into_make_classifier()
         ))
-        .layer(CorsLayer::permissive())
+        .layer(CorsLayer::very_permissive().allow_origin(origins))
         .layer(CatchPanicLayer::new())
         .layer(DefaultBodyLimit::max(
             CONFIG.connection.max_body_size * 1024 * 1024,
