@@ -93,15 +93,15 @@ pub struct RegisterRequest {
 
 #[test]
 fn test_verify_password() {
-    assert_eq!(is_valid_password("123456"), false);
-    assert_eq!(is_valid_password("hhhhh"), false);
-    assert_eq!(is_valid_password("ZZZZZDSDDDS"), false);
-    assert_eq!(is_valid_password("......"), false);
-    assert_eq!(is_valid_password("Za1."), false);
-    assert_eq!(is_valid_password("ZHCccccc"), true);
-    assert_eq!(is_valid_password("zsg1234567"), true);
-    assert_eq!(is_valid_password("12348."), true);
-    assert_eq!(is_valid_password("zsg.."), true);
-    assert_eq!(is_valid_password("GHG.."), true);
+    assert!(!is_valid_password("123456"));
+    assert!(!is_valid_password("hhhhh"));
+    assert!(!is_valid_password("ZZZZZDSDDDS"));
+    assert!(!is_valid_password("......"));
+    assert!(!is_valid_password("Za1."));
+    assert!(is_valid_password("ZHCccccc"));
+    assert!(is_valid_password("zsg1234567"));
+    assert!(is_valid_password("12348."));
+    assert!(is_valid_password("zsg.."));
+    assert!(is_valid_password("GHG.."));
     println!("Password Verify Test passed");
 }
