@@ -29,14 +29,14 @@ pub async fn delete_picture(Query(picture_id): Query<DeletePictureRequest>, Auth
         .unwrap()
         .unwrap()
         .size;
-    let (mut parent, mut depth) = minus_size_to_folder(&*DATABASE, user_picture.folder_id, size).await;
+    let (mut parent, mut depth) = minus_size_to_folder(&DATABASE, user_picture.folder_id, size).await;
 
     while let Some(a) = parent {
-        let (new_parent, new_depth) = minus_size_to_folder(&*DATABASE, a, size).await;
+        let (new_parent, new_depth) = minus_size_to_folder(&DATABASE, a, size).await;
 
         if new_depth != depth - 1 {
             error!("Invalid depth: {} in {} (indexed from depth {})", new_depth, a, depth);
-            minus_size_to_folder(&*DATABASE, user.root, size).await;
+            minus_size_to_folder(&DATABASE, user.root, size).await;
             break;
         }
 

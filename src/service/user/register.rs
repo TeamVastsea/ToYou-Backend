@@ -56,7 +56,7 @@ pub async fn register_user(Json(request): Json<RegisterRequest>) -> Result<Strin
 //Since regex crate does not support lookbehind, we have to use a workaround to check the password.
 pub fn is_valid_password(password: &str) -> bool {
     let length = password.len();
-    if length < 5 || length > 20 {
+    if !(5..=20).contains(&length) {
         return false;
     }
 

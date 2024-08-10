@@ -7,7 +7,7 @@ pub enum ContentType{
 impl ContentType {
     pub fn verify(data: &str) -> bool {
         let id = Self::try_from(data);
-        return id.is_ok();
+        id.is_ok()
     }
 }
 

@@ -91,14 +91,14 @@ pub async fn post_picture(AuthUser(user): AuthUser, mut multipart: Multipart) ->
     // ----------------------  => ------------------------------
     // | a  |   3   |   b   |     | b  |     2     |     c     |
     // ----------------------     ------------------------------
-    let (mut parent, mut depth) = add_size_to_folder(&*DATABASE, dir, size).await;
+    let (mut parent, mut depth) = add_size_to_folder(&DATABASE, dir, size).await;
 
     while let Some(a) = parent {
-        let (new_parent, new_depth) = add_size_to_folder(&*DATABASE, a, size).await;
+        let (new_parent, new_depth) = add_size_to_folder(&DATABASE, a, size).await;
 
         if new_depth != depth - 1 {
             error!("Invalid depth: {} in {} (indexed from depth {})", new_depth, a, depth);
-            add_size_to_folder(&*DATABASE, user.root, size).await;
+            add_size_to_folder(&DATABASE, user.root, size).await;
             break;
         }
 

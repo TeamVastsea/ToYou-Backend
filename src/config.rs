@@ -110,6 +110,7 @@ impl Config {
             .read(true)
             .write(true)
             .create(true)
+            .truncate(false)
             .open("config.toml")
             .expect("Cannot open 'config.toml'");
         file.read_to_string(&mut raw_config).unwrap();

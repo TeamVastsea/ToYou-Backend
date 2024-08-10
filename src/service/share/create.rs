@@ -22,17 +22,14 @@ pub async fn create_share(AuthUser(user): AuthUser, Json(body): Json<CreateShare
         .map(|e| {
             let raw: Vec<i64> = serde_json::from_str(&e).unwrap();
             LevelInfo::try_from(raw).unwrap_or_else(|_| LevelInfo::get_free_level())
-        }).max().unwrap_or_else(|| LevelInfo::get_free_level());
+        }).max().unwrap_or_else(LevelInfo::get_free_level);
     let max_level = level.level.get_max_share_level();
     let share_level = body.mode as u8;
 
     if share_level > max_level as u8 {
         return Err(ErrorMessage::PermissionDenied);
     }
-    let password = match body.password {
-        None => { None }
-        Some(a) => { Some(generate_password_hash(&a)) }
-    };
+    let password = body.password.map(|a| generate_password_hash(&a));
 
     let share = crate::model::share::ActiveModel {
         id: NotSet,
@@ -44,7 +41,7 @@ pub async fn create_share(AuthUser(user): AuthUser, Json(body): Json<CreateShare
         valid_time: Set(Utc::now().checked_add_days(Days::new(7)).unwrap().naive_local()),
     };
 
-    return Ok(share.insert(&*DATABASE).await.unwrap().id.to_string());
+    Ok(share.insert(&*DATABASE).await.unwrap().id.to_string())
 }
 
 #[derive(Deserialize)]

@@ -22,7 +22,7 @@ pub async fn check_share_password(Query(query): Query<HashMap<String, String>>) 
     let id = Uuid::from_str(id).map_err(|_| { ErrorMessage::InvalidParams("id".to_string()) })?;
     let share = Share::find_by_id(id).one(&*DATABASE).await.unwrap().ok_or(ErrorMessage::NotFound)?;
 
-    return Ok(share.password.is_some().to_string());
+    Ok(share.password.is_some().to_string())
 }
 
 pub async fn get_share_info(Query(query): Query<HashMap<String, String>>, Path(id): Path<String>) -> Result<String, ErrorMessage> {

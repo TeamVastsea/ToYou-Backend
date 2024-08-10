@@ -21,13 +21,13 @@ pub fn generate_trade_id(prefix: &str) -> String {
     let mut id = prefix.to_string().to_ascii_uppercase();
 
     id += Utc::now().format("%Y%m%d%H%M%S%b%a%f").to_string().to_ascii_uppercase().as_str();
-    id = (&id[..32]).to_string();
+    id = id[..32].to_string();
 
     id
 }
 
 pub async fn start_wechat(userid: i64, level: Level, period: i32, start_date: NaiveDate) -> (bool, String) {
-    if let Some(_) = TRADE_CACHE.get(&userid).await {
+    if TRADE_CACHE.get(&userid).await.is_some() {
         return (false, "Already exist".to_string());
     }
     let trade_id = generate_trade_id("WECHAT");
@@ -68,7 +68,7 @@ pub async fn start_wechat(userid: i64, level: Level, period: i32, start_date: Na
         return (false, format!("Cannot get url: {:?}, code {:?}", body.message, body.code));
     }
 
-    return (true, body.code_url.unwrap());
+    (true, body.code_url.unwrap())
 }
 
 #[test]

@@ -75,7 +75,7 @@ pub async fn login_user(headers: HeaderMap, Query(request): Query<LoginRequest>)
     if request.extended { //extended information includes the user's level and used space
         let levels: Vec<Vec<i64>> = user.level.iter().map(|level| serde_json::from_str(level).unwrap()).collect();
         let levels: Vec<LevelInfo> = levels.into_iter().map(|level| LevelInfo::try_from(level).unwrap()).collect();
-        let max_level = levels.into_iter().max().unwrap_or_else(|| LevelInfo::get_free_level());
+        let max_level = levels.into_iter().max().unwrap_or_else(LevelInfo::get_free_level);
 
         let root_size = Folder::find_by_id(user.root).one(&*DATABASE).await.unwrap().unwrap().size;
         let user = UserExtended {
@@ -100,11 +100,8 @@ pub async fn login_user(headers: HeaderMap, Query(request): Query<LoginRequest>)
 pub async fn login_by_token(header: &HeaderMap) -> Option<crate::model::user::Model> {
     if !header.contains_key("token") { return None; }
     let token = header.get("token").unwrap().to_str().unwrap();
-    let uid = TOKEN_CACHE.get(token).await;
-    if uid.is_none() {
-        return None;
-    }
-    User::find().filter(crate::model::user::Column::Id.eq(uid.unwrap())).one(&*DATABASE).await.unwrap()
+    let uid = TOKEN_CACHE.get(token).await?;
+    User::find().filter(crate::model::user::Column::Id.eq(uid)).one(&*DATABASE).await.unwrap()
 }
 
 #[serde_inline_default]
